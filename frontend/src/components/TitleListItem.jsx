@@ -45,9 +45,10 @@ export default function TitleListItem({ title, rank }) {
         )}
       </div>
 
-      {/* Score */}
       <div className="shrink-0">
-        <ScoreBadge score={title.criticScore} />
+        <ScoreBadge
+          score={title.criticScore ?? title.userScore ?? null}
+        />
       </div>
     </Link>
   );

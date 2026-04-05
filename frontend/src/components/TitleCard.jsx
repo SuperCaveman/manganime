@@ -44,8 +44,10 @@ export default function TitleCard({ title }) {
         <div className="p-3">
           <h3 className="text-sm font-semibold text-white truncate mb-2">{displayTitle}</h3>
           <div className="flex items-center gap-2">
-            <ScoreBadge score={title.criticScore} label={t('scores.critic')} />
-            <ScoreBadge score={title.userScore} label={t('scores.user')} />
+            <ScoreBadge
+              score={title.criticScore ?? title.userScore ?? null}
+              label={title.criticScore != null ? t('scores.critic') : title.userScore != null ? t('scores.user') : null}
+            />
           </div>
         </div>
       </div>

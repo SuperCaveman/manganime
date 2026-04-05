@@ -18,6 +18,8 @@ Globals:
         VOLUME_SCORES_TABLE: !Ref VolumeScoresTable
         COMMENTS_TABLE: !Ref CommentsTable
         NOTIFICATIONS_TABLE: !Ref NotificationsTable
+        RELEASE_CALENDAR_TABLE: !Ref ReleaseCalendarTable
+        AFFILIATE_TAG: "thunderwolfdr-20"
 
 Resources:
 
@@ -150,6 +152,25 @@ Resources:
         - AttributeName: notificationId
           KeyType: RANGE
 
+  ReleaseCalendarTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${AWS::StackName}-release-calendar"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: weekStart
+          AttributeType: S
+        - AttributeName: releaseId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: weekStart
+          KeyType: HASH
+        - AttributeName: releaseId
+          KeyType: RANGE
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+
   # ── Cognito ────────────────────────────────────────────────────────────────
 
   UserPool:
@@ -182,7 +203,6 @@ Resources:
       ExplicitAuthFlows:
         - ALLOW_USER_SRP_AUTH
         - ALLOW_REFRESH_TOKEN_AUTH
-        - ALLOW_USER_PASSWORD_AUTH
 
   # ── S3 + CloudFront ────────────────────────────────────────────────────────
 
@@ -258,7 +278,7 @@ Resources:
     Properties:
       CorsConfiguration:
         AllowOrigins:
-          - "*"
+          - "https://d3ebxffhzw1f7f.cloudfront.net"
         AllowHeaders:
           - Content-Type
           - Authorization
@@ -359,6 +379,8 @@ Resources:
             ApiId: !Ref HttpApi
             Path: /titles/{titleId}/reviews/{reviewId}/translate
             Method: POST
+            Auth:
+              Authorizer: CognitoJwtAuthorizer
 
   GetReviewsFunction:
     Type: AWS::Serverless::Function
@@ -414,6 +436,8 @@ Resources:
             ApiId: !Ref HttpApi
             Path: /titles/{titleId}/fetch-cover
             Method: POST
+            Auth:
+              Authorizer: CognitoJwtAuthorizer
 
   DeleteReviewFunction:
     Type: AWS::Serverless::Function
@@ -627,6 +651,43 @@ Resources:
             ApiId: !Ref HttpApi
             Path: /news
             Method: GET
+
+  GetReleasesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-get-releases"
+      CodeUri: .
+      Handler: src/handlers/getReleases.handler
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref ReleaseCalendarTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /releases
+            Method: GET
+
+  FetchReleaseCalendarFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-fetch-release-calendar"
+      CodeUri: .
+      Handler: src/handlers/fetchReleaseCalendar.handler
+      Timeout: 300
+      MemorySize: 256
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ReleaseCalendarTable
+      Events:
+        WeeklySchedule:
+          Type: Schedule
+          Properties:
+            Schedule: cron(0 6 ? * MON *)
+            Name: !Sub "${AWS::StackName}-release-calendar-weekly"
+            Description: Fetch anime/manga release data every Monday at 6am UTC
+            Enabled: true
 
 Outputs:
   ApiUrl:

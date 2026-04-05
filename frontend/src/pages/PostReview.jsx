@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { titles as titlesApi } from '../api/client';
 import { getCurrentUser } from '../auth/cognito';
@@ -8,9 +8,42 @@ import ScoreBadge from '../components/ScoreBadge';
 const GENRES = ['Action', 'Drama', 'Fantasy', 'Historical', 'Horror', 'Romance', 'Sci-Fi', 'Shounen', 'Slice of Life', 'Thriller'];
 
 function scoreColor(s) {
-  if (s >= 86) return '#22C55E';
-  if (s >= 41) return '#FACC15';
+  if (s >= 75) return '#22C55E';
+  if (s >= 50) return '#FACC15';
   return '#EF4444';
+}
+
+// ── Jikan helpers ─────────────────────────────────────────────────────────────
+
+function mapAnime(item) {
+  return {
+    malId: item.mal_id,
+    titleEn: item.title_english || item.title,
+    titleJa: item.title_japanese || '',
+    type: 'anime',
+    year: item.year || item.aired?.prop?.from?.year || null,
+    genres: item.genres?.map((g) => g.name) || [],
+    studio: item.studios?.[0]?.name || '',
+    coverImageUrl: item.images?.jpg?.large_image_url || item.images?.jpg?.image_url || '',
+    trailerYoutubeId: (() => { const t = item.trailer; const m = t?.embed_url?.match(/embed\/([^?]+)/); return t?.youtube_id || (m ? m[1] : null); })(),
+    episodes: item.episodes || null,
+    status: item.status || '',
+  };
+}
+
+function mapManga(item) {
+  return {
+    malId: item.mal_id,
+    titleEn: item.title_english || item.title,
+    titleJa: item.title_japanese || '',
+    type: 'manga',
+    year: item.published?.prop?.from?.year || null,
+    genres: item.genres?.map((g) => g.name) || [],
+    studio: item.authors?.[0]?.name || '',
+    coverImageUrl: item.images?.jpg?.large_image_url || item.images?.jpg?.image_url || '',
+    volumes: item.volumes || null,
+    status: item.status || '',
+  };
 }
 
 // ── Step 1: search ────────────────────────────────────────────────────────────
@@ -19,28 +52,75 @@ function SearchStep({ onSelect, onCreateNew }) {
   const { i18n } = useTranslation();
   const isJa = i18n.language === 'ja';
   const [query, setQuery] = useState('');
+  const [typeFilter, setTypeFilter] = useState('all');
   const [results, setResults] = useState([]);
   const [searching, setSearching] = useState(false);
+  const [selecting, setSelecting] = useState(null); // malId currently being loaded
   const timerRef = useRef(null);
 
-  const runSearch = useCallback((q) => {
+  const runSearch = useCallback(async (q, type) => {
     if (!q.trim()) { setResults([]); return; }
     setSearching(true);
-    titlesApi.search(q)
-      .then((res) => setResults(res.data.items || []))
-      .catch(console.error)
-      .finally(() => setSearching(false));
+    try {
+      const fetches = [];
+      if (type === 'all' || type === 'anime') {
+        fetches.push(
+          fetch(`https://api.jikan.moe/v4/anime?q=${encodeURIComponent(q)}&limit=10&sfw`)
+            .then((r) => r.json()).then((d) => (d.data || []).map(mapAnime)).catch(() => [])
+        );
+      }
+      if (type === 'all' || type === 'manga') {
+        fetches.push(
+          fetch(`https://api.jikan.moe/v4/manga?q=${encodeURIComponent(q)}&limit=10&sfw`)
+            .then((r) => r.json()).then((d) => (d.data || []).map(mapManga)).catch(() => [])
+        );
+      }
+      const arrays = await Promise.all(fetches);
+      setResults(arrays.flat());
+    } catch (err) {
+      console.error('Jikan search error:', err);
+      setResults([]);
+    } finally {
+      setSearching(false);
+    }
   }, []);
 
   const handleChange = (e) => {
     const q = e.target.value;
     setQuery(q);
     clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => runSearch(q), 300);
+    timerRef.current = setTimeout(() => runSearch(q, typeFilter), 400);
+  };
+
+  const handleTypeChange = (type) => {
+    setTypeFilter(type);
+    if (query.trim()) runSearch(query, type);
+  };
+
+  const handleSelect = async (jikanTitle) => {
+    setSelecting(jikanTitle.malId);
+    try {
+      const res = await titlesApi.create({
+        titleEn: jikanTitle.titleEn,
+        titleJa: jikanTitle.titleJa,
+        type: jikanTitle.type,
+        genres: jikanTitle.genres,
+        studio: jikanTitle.studio,
+        year: jikanTitle.year,
+        coverImageUrl: jikanTitle.coverImageUrl,
+        malId: jikanTitle.malId,
+        ...(jikanTitle.trailerYoutubeId && { trailerYoutubeId: jikanTitle.trailerYoutubeId }),
+      });
+      onSelect(res.data);
+    } catch (err) {
+      console.error('Find-or-create failed:', err);
+      setSelecting(null);
+    }
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
+      {/* Search input */}
       <div className="relative">
         <input
           autoFocus
@@ -55,40 +135,78 @@ function SearchStep({ onSelect, onCreateNew }) {
         )}
       </div>
 
+      {/* Type filter */}
+      <div className="flex gap-2">
+        {['all', 'anime', 'manga'].map((t) => (
+          <button
+            key={t}
+            type="button"
+            onClick={() => handleTypeChange(t)}
+            className={`px-3 py-1 rounded-full text-xs font-semibold capitalize transition-colors ${
+              typeFilter === t ? 'bg-purple-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+            }`}
+          >
+            {t}
+          </button>
+        ))}
+      </div>
+
       {/* Results */}
       {results.length > 0 && (
         <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
           {results.map((title) => {
             const displayTitle = isJa && title.titleJa ? title.titleJa : title.titleEn;
+            const meta = [
+              title.type === 'anime'
+                ? `<span class="text-blue-400">ANIME</span>`
+                : `<span class="text-orange-400">MANGA</span>`,
+              title.year,
+              title.studio,
+              title.episodes ? `${title.episodes} ep` : null,
+              title.volumes ? `${title.volumes} vol` : null,
+            ].filter(Boolean);
+            const isLoading = selecting === title.malId;
             return (
               <button
-                key={title.titleId}
-                onClick={() => onSelect(title)}
-                className="w-full flex items-center gap-3 p-3 bg-gray-900 hover:bg-gray-800 border border-gray-800 hover:border-purple-600 rounded-xl transition-colors text-left"
+                key={`${title.type}-${title.malId}`}
+                onClick={() => handleSelect(title)}
+                disabled={selecting !== null}
+                className="w-full flex items-center gap-3 p-3 bg-gray-900 hover:bg-gray-800 border border-gray-800 hover:border-purple-600 rounded-xl transition-colors text-left disabled:opacity-60"
               >
                 <div className="w-10 h-14 shrink-0 rounded overflow-hidden bg-gray-800">
                   {title.coverImageUrl ? (
                     <img src={title.coverImageUrl} alt={displayTitle} className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-600">
+                    <div className="w-full h-full flex items-center justify-center text-gray-600 text-lg">
                       {title.type === 'anime' ? '🎬' : '📖'}
                     </div>
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-white truncate">{displayTitle}</p>
-                  <p className="text-xs text-gray-500">
-                    {title.type?.toUpperCase()} · {title.year || '—'}
-                  </p>
+                  {isJa && title.titleEn && (
+                    <p className="text-xs text-gray-600 truncate">{title.titleEn}</p>
+                  )}
+                  <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 mt-0.5">
+                    <span className={`text-xs font-semibold ${title.type === 'anime' ? 'text-blue-400' : 'text-orange-400'}`}>
+                      {title.type.toUpperCase()}
+                    </span>
+                    {title.year && <span className="text-xs text-gray-500">· {title.year}</span>}
+                    {title.studio && <span className="text-xs text-gray-500">· {title.studio}</span>}
+                    {title.episodes && <span className="text-xs text-gray-600">· {title.episodes} ep</span>}
+                    {title.volumes && <span className="text-xs text-gray-600">· {title.volumes} vol</span>}
+                  </div>
                 </div>
-                <ScoreBadge score={title.criticScore} />
+                {isLoading && (
+                  <div className="w-4 h-4 border-2 border-purple-500 border-t-transparent rounded-full animate-spin shrink-0" />
+                )}
               </button>
             );
           })}
         </div>
       )}
 
-      {/* No results prompt */}
+      {/* No results */}
       {query.trim().length > 1 && !searching && results.length === 0 && (
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 text-center space-y-3">
           <p className="text-gray-400 text-sm">
@@ -99,6 +217,19 @@ function SearchStep({ onSelect, onCreateNew }) {
             className="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-5 py-2 rounded-lg transition-colors text-sm"
           >
             + Add "{query}" to MangaCritic
+          </button>
+        </div>
+      )}
+
+      {/* Add option when results exist but title isn't listed */}
+      {query.trim().length > 1 && !searching && results.length > 0 && (
+        <div className="flex items-center justify-between pt-1 px-1">
+          <p className="text-xs text-gray-600">Not listed?</p>
+          <button
+            onClick={() => onCreateNew(query)}
+            className="text-xs text-purple-400 hover:text-purple-300 font-medium transition-colors"
+          >
+            + Add "{query}" manually
           </button>
         </div>
       )}
@@ -435,12 +566,15 @@ function SuccessScreen({ titleId, onAnother, onView }) {
 
 export default function PostReview() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [user, setUser] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
 
+  const preselected = location.state?.preselectedTitle ?? null;
+
   // step: 'search' | 'review' | 'create' | 'done'
-  const [step, setStep] = useState('search');
-  const [selectedTitle, setSelectedTitle] = useState(null);
+  const [step, setStep] = useState(preselected ? 'review' : 'search');
+  const [selectedTitle, setSelectedTitle] = useState(preselected);
   const [initialName, setInitialName] = useState('');
   const [doneTitleId, setDoneTitleId] = useState(null);
 

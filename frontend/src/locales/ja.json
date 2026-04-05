@@ -10,6 +10,9 @@
     "title": "MangaCritic",
     "subtitle": "アニメ・マンガレビューの決定版",
     "empty": "タイトルが見つかりません。",
+    "nineties_title": "90年代スポットライト",
+    "nineties_subtitle": "黄金時代の名作",
+    "trailers_title": "最新トレーラー",
     "filter": {
       "all": "すべて",
       "anime": "アニメ",
@@ -26,7 +29,11 @@
     "season": "シーズン",
     "volume": "巻",
     "season_scores": "シーズン別スコア",
-    "volume_scores": "巻別スコア"
+    "volume_scores": "巻別スコア",
+    "critic_score": "批評家スコア",
+    "audience_score": "視聴者スコア",
+    "based_on": "{{count}}件のレビューに基づく",
+    "not_rated": "未評価"
   },
   "profile": {
     "title": "マイプロフィール",
@@ -66,7 +73,14 @@
     "season_number": "シーズン番号",
     "episode_number": "エピソード番号",
     "volume_number": "巻番号",
-    "gran_movie": "映画"
+    "gran_movie": "映画",
+    "tab_series": "シリーズレビュー",
+    "tab_volume": "巻別",
+    "tab_season": "シーズン別",
+    "tab_episode": "エピソード別",
+    "volume_label": "巻",
+    "season_label": "シーズン",
+    "episode_label": "第"
   },
   "auth": {
     "username": "ユーザー名",
@@ -91,6 +105,19 @@
     "unread": "件未読",
     "empty": "新しい通知はありません。",
     "commented": "があなたのレビューにコメントしました"
+  },
+  "calendar": {
+    "this_week": "今週のリリース",
+    "next_week": "来週のリリース",
+    "anime_episodes": "アニメエピソード",
+    "manga_volumes": "マンガ新刊",
+    "bluray_dvd": "Blu-ray / DVD",
+    "streaming": "配信",
+    "episode": "第",
+    "volume": "巻",
+    "buy": "購入",
+    "empty": "リリース情報がありません。",
+    "bluray_stub": "パッケージ版情報は近日公開予定です。"
   },
   "errors": {
     "loading": "読み込みに失敗しました。もう一度お試しください。",

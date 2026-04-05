@@ -53,4 +53,8 @@ export const notifications = {
   markRead: (notificationIds) => api.post('/users/me/notifications/read', { notificationIds }),
 };
 
+export const releases = {
+  get: (week) => api.get('/releases', { params: { week } }),
+};
+
 export default api;

@@ -30,6 +30,19 @@ async function fetchCover(titleEn, type) {
   }
 }
 
+async function fetchJikanTrailer(malId) {
+  try {
+    const res = await fetch(`https://api.jikan.moe/v4/anime/${malId}`);
+    if (!res.ok) return null;
+    const json = await res.json();
+    const trailer = json.data?.trailer;
+    const embedMatch = trailer?.embed_url?.match(/embed\/([^?]+)/);
+    return trailer?.youtube_id || (embedMatch ? embedMatch[1] : null);
+  } catch {
+    return null;
+  }
+}
+
 function slugify(str) {
   return str
     .toLowerCase()
@@ -50,12 +63,13 @@ exports.handler = async (event) => {
       return badRequest('Invalid JSON body');
     }
 
-    const { titleEn, titleJa, type, genres, studio, year } = body;
+    const { titleEn, titleJa, type, genres, studio, year, malId, coverImageUrl: providedCover, trailerYoutubeId: providedTrailer } = body;
 
     if (!titleEn?.trim()) return badRequest('titleEn is required');
     if (!['anime', 'manga'].includes(type)) return badRequest('type must be "anime" or "manga"');
 
-    const titleId = slugify(titleEn);
+    // Jikan-sourced titles use a stable malId-based key; manual titles use a slug
+    const titleId = malId ? `${type}-${malId}` : slugify(titleEn);
 
     // Return existing title if already present
     const existing = await ddb.send(new GetCommand({
@@ -66,8 +80,14 @@ exports.handler = async (event) => {
       return ok({ ...existing.Item, alreadyExists: true });
     }
 
-    // Auto-fetch cover from AniList
-    const coverImageUrl = await fetchCover(titleEn.trim(), type);
+    // Use provided cover (from Jikan) or fetch from AniList as fallback
+    const coverImageUrl = providedCover || await fetchCover(titleEn.trim(), type);
+
+    // Use provided trailer ID (from Jikan search result) or fetch from Jikan for anime
+    let trailerYoutubeId = providedTrailer || null;
+    if (!trailerYoutubeId && type === 'anime' && malId) {
+      trailerYoutubeId = await fetchJikanTrailer(malId);
+    }
 
     const enClean = titleEn.trim();
     const jaClean = titleJa?.trim() || '';
@@ -82,9 +102,12 @@ exports.handler = async (event) => {
       studio: studio?.trim() || '',
       year: year ? parseInt(year, 10) : null,
       coverImageUrl,
+      ...(malId && { malId: String(malId) }),
+      ...(trailerYoutubeId && { trailerYoutubeId }),
       criticScore: null,
       userScore: null,
       reviewCount: 0,
+      createdAt: new Date().toISOString(),
     };
 
     await ddb.send(new PutCommand({ TableName: process.env.TITLES_TABLE, Item: title }));

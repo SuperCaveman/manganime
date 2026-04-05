@@ -10,6 +10,9 @@
     "title": "MangaCritic",
     "subtitle": "The definitive guide to anime & manga reviews",
     "empty": "No titles found.",
+    "nineties_title": "90s Spotlight",
+    "nineties_subtitle": "Classics from the golden era",
+    "trailers_title": "Latest Trailers",
     "filter": {
       "all": "All",
       "anime": "Anime",
@@ -26,7 +29,11 @@
     "season": "Season",
     "volume": "Volume",
     "season_scores": "Season Scores",
-    "volume_scores": "Volume Scores"
+    "volume_scores": "Volume Scores",
+    "critic_score": "Critic Score",
+    "audience_score": "Audience Score",
+    "based_on": "Based on {{count}} reviews",
+    "not_rated": "Not yet rated"
   },
   "profile": {
     "title": "My Profile",
@@ -66,7 +73,14 @@
     "season_number": "Season #",
     "episode_number": "Episode #",
     "volume_number": "Volume #",
-    "gran_movie": "Movie"
+    "gran_movie": "Movie",
+    "tab_series": "Series Reviews",
+    "tab_volume": "By Volume",
+    "tab_season": "By Season",
+    "tab_episode": "By Episode",
+    "volume_label": "Volume",
+    "season_label": "Season",
+    "episode_label": "Ep"
   },
   "auth": {
     "username": "Username",
@@ -91,6 +105,19 @@
     "unread": "unread",
     "empty": "No new notifications.",
     "commented": "commented on your review"
+  },
+  "calendar": {
+    "this_week": "Out This Week",
+    "next_week": "Coming Next Week",
+    "anime_episodes": "Anime Episodes",
+    "manga_volumes": "Manga Volumes",
+    "bluray_dvd": "Blu-ray / DVD",
+    "streaming": "Streaming",
+    "episode": "Ep",
+    "volume": "Vol",
+    "buy": "Buy",
+    "empty": "No releases found.",
+    "bluray_stub": "Physical release data coming soon."
   },
   "errors": {
     "loading": "Failed to load. Please try again.",
