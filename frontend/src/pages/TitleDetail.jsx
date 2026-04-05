@@ -15,7 +15,7 @@ function roundedAvg(nums) {
 
 function partitionBySrc(reviews) {
   return {
-    critics: reviews.filter((r) => r.source === 'critic'),
+    critics: reviews.filter((r) => r.source === 'critic' || r.source === 'critic-external'),
     users:   reviews.filter((r) => r.source === 'user'),
   };
 }
@@ -84,6 +84,11 @@ function ReviewList({ reviews, titleId, currentUserId, currentUsername, onDelete
               />
             ))}
           </div>
+          {critics.some((r) => r.source === 'critic-external') && (
+            <p className="mt-3 text-xs text-gray-600 italic">
+              {t('review.critic_disclaimer')}
+            </p>
+          )}
         </div>
       )}
       {users.length > 0 && (
@@ -440,7 +445,7 @@ export default function TitleDetail() {
   }
 
   if (!title) {
-    return <p className="text-center text-gray-500 py-24">Title not found.</p>;
+    return <p className="text-center text-gray-500 py-24">{t('title.not_found')}</p>;
   }
 
   const displayTitle = lang === 'ja' && title.titleJa ? title.titleJa : title.titleEn;
@@ -474,7 +479,7 @@ export default function TitleDetail() {
                 disabled={fetchingCover}
                 className="text-xs font-medium bg-gray-700 hover:bg-gray-600 text-gray-300 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
               >
-                {fetchingCover ? 'Fetching…' : 'Fetch Cover'}
+                {fetchingCover ? t('title.fetching') : t('title.fetch_cover')}
               </button>
             </div>
           )}
@@ -525,7 +530,7 @@ export default function TitleDetail() {
       {(() => {
         const q = encodeURIComponent(title.type === 'anime' ? `${title.titleEn} anime blu-ray` : `${title.titleEn} manga`);
         const href = `https://www.amazon.com/s?k=${q}&tag=${import.meta.env.VITE_AFFILIATE_TAG || 'thunderwolfdr-20'}`;
-        const label = title.type === 'anime' ? 'Buy / Stream on Amazon' : 'Buy on Amazon';
+        const label = title.type === 'anime' ? t('title.buy_stream_amazon') : t('title.buy_manga_amazon');
         return (
           <div className="mb-6">
             <a href={href} target="_blank" rel="noopener noreferrer"
@@ -543,9 +548,9 @@ export default function TitleDetail() {
       {/* ── Submit review CTA / form ─────────────────────────────── */}
       {!user && (
         <div className="mb-6 flex items-center gap-3 bg-gray-900 border border-gray-800 rounded-xl px-5 py-4">
-          <span className="text-gray-400 text-sm">Want to rate this?</span>
+          <span className="text-gray-400 text-sm">{t('title.want_to_rate')}</span>
           <a href="/login" className="bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium px-4 py-1.5 rounded-lg transition-colors">
-            Log in to review
+            {t('title.login_to_review')}
           </a>
         </div>
       )}

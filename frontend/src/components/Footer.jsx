@@ -61,11 +61,14 @@ export default function Footer() {
 
         <div className="border-t border-gray-800 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-600">
           <p>© {year} MangaCritic. {isJa ? '全著作権所有。' : 'All rights reserved.'}</p>
-          <p>
-            {isJa
-              ? 'ニュース提供: Anime News Network・アニメ！アニメ！　カバー画像提供: AniList'
-              : 'News via Anime News Network & アニメ！アニメ！ · Cover images via AniList'}
-          </p>
+          <div className="text-right space-y-1">
+            <p>
+              {isJa
+                ? 'ニュース提供: Anime News Network・アニメ！アニメ！　カバー画像提供: AniList'
+                : 'News via Anime News Network & アニメ！アニメ！ · Cover images via AniList'}
+            </p>
+            <p>Release data via Seven Seas · Viz · Yen Press · Kodansha · Crunchyroll · HiDive</p>
+          </div>
         </div>
 
       </div>

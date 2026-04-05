@@ -4,7 +4,8 @@
     "login": "ログイン",
     "logout": "ログアウト",
     "signup": "登録",
-    "profile": "プロフィール"
+    "profile": "プロフィール",
+    "post_review": "レビューを書く"
   },
   "home": {
     "title": "MangaCritic",
@@ -13,6 +14,10 @@
     "nineties_title": "90年代スポットライト",
     "nineties_subtitle": "黄金時代の名作",
     "trailers_title": "最新トレーラー",
+    "latestNews": "アニメ・マンガ最新ニュース",
+    "noNews": "ニュースはありません。",
+    "newsSource": "情報提供：{{source}}",
+    "seeAll": "すべて見る →",
     "filter": {
       "all": "すべて",
       "anime": "アニメ",
@@ -80,7 +85,32 @@
     "tab_episode": "エピソード別",
     "volume_label": "巻",
     "season_label": "シーズン",
-    "episode_label": "第"
+    "episode_label": "第",
+    "search_placeholder": "アニメ・マンガのタイトルを検索…",
+    "no_results": "「{{query}}」の結果はありません",
+    "add_title": "「{{query}}」をMangaCriticに追加",
+    "not_listed": "見つかりませんか？",
+    "add_manually": "「{{query}}」を手動で追加",
+    "change_title": "← 変更",
+    "submitting": "送信中…",
+    "back": "← 戻る",
+    "add_new_title": "新しいタイトルを追加",
+    "label_english_title": "英語タイトル",
+    "label_japanese_title": "日本語タイトル",
+    "label_studio": "スタジオ・著者",
+    "label_year": "年",
+    "label_type": "種類",
+    "label_genres": "ジャンル",
+    "cover_help": "カバー画像はAniListから自動的に取得されます。",
+    "create_continue": "タイトルを作成して続行 →",
+    "success_title": "レビューを投稿しました！",
+    "success_body": "あなたのスコアが集計に追加されました。",
+    "view_title": "タイトルを見る",
+    "post_another": "別のレビューを投稿",
+    "page_title": "レビューを書く",
+    "page_subtitle": "既存のタイトルを評価するか、MangaCriticに新しいタイトルを追加してください。",
+    "read_full": "全文を読む",
+    "critic_disclaimer": "批評家スコアと抜粋はサードパーティの出版物から取得しています。全文を読むにはクリックしてください。"
   },
   "auth": {
     "username": "ユーザー名",
@@ -117,10 +147,21 @@
     "volume": "巻",
     "buy": "購入",
     "empty": "リリース情報がありません。",
-    "bluray_stub": "パッケージ版情報は近日公開予定です。"
+    "bluray_stub": "パッケージ版情報は近日公開予定です。",
+    "beFirstToReview": "最初にレビューする"
+  },
+  "title": {
+    "fetch_cover": "カバーを取得",
+    "fetching": "取得中…",
+    "buy_stream_amazon": "Amazonで購入・視聴",
+    "buy_manga_amazon": "Amazonで購入",
+    "want_to_rate": "評価しますか？",
+    "login_to_review": "ログインしてレビュー",
+    "not_found": "タイトルが見つかりません。"
   },
   "errors": {
     "loading": "読み込みに失敗しました。もう一度お試しください。",
-    "submit": "送信に失敗しました。もう一度お試しください。"
+    "submit": "送信に失敗しました。もう一度お試しください。",
+    "create_title": "タイトルの作成に失敗しました。もう一度お試しください。"
   }
 }

@@ -26,11 +26,27 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 function getMondayUTC(offsetWeeks = 0) {
   const now = new Date();
   const day = now.getUTCDay(); // 0=Sun
-  const daysToMonday = day === 0 ? -6 : 1 - day;
+  // Sunday looks forward to the next Monday so "this week" always covers the
+  // upcoming Mon–Sun window, matching how release data is bucketed.
+  const daysToMonday = day === 0 ? 1 : 1 - day;
   const monday = new Date(now);
   monday.setUTCDate(now.getUTCDate() + daysToMonday + offsetWeeks * 7);
   monday.setUTCHours(0, 0, 0, 0);
   return monday;
+}
+
+// Decode common HTML entities so titles with apostrophes/dashes render correctly
+function decodeEntities(str) {
+  return str
+    .replace(/&#(\d+);/g, (_, c) => String.fromCharCode(parseInt(c)))
+    .replace(/&rsquo;|&lsquo;|&apos;/g, "'")
+    .replace(/&rdquo;|&ldquo;/g, '"')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&ndash;/g, '–')
+    .replace(/&mdash;/g, '—');
 }
 
 function toDateStr(d) {
@@ -88,6 +104,8 @@ async function fetchJikanSchedule(monday) {
         for (const item of data) {
           const malId = String(item.mal_id);
           const ep    = estimateEpisode(item.aired?.from, weekStartStr);
+          // Use the first named streaming service; fall back to 'Streaming'
+          const platform = item.streaming?.[0]?.name || 'Streaming';
           results.push({
             weekStart:   weekStartStr,
             releaseId:   `anime-episode#${malId}`,
@@ -97,7 +115,7 @@ async function fetchJikanSchedule(monday) {
             titleJa:     item.title_japanese || '',
             malId,
             coverImageUrl: item.images?.jpg?.large_image_url || item.images?.jpg?.image_url || '',
-            platform:    'Streaming',
+            platform,
             ...(ep && { episodeNumber: ep }),
             ttl: ttlFor(weekStartStr),
           });
@@ -228,7 +246,9 @@ async function fetchSevenSeas(weekStartStr, weekEndStr) {
     const rows  = html.match(rowRe) || [];
 
     for (const row of rows) {
-      const stripped = row.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+      // Decode entities first so smart-quotes/apostrophes don't break parsing
+      const decoded = decodeEntities(row);
+      const stripped = decoded.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
 
       // ISO date: 2026-04-08
       let dateStr  = null;
@@ -250,12 +270,24 @@ async function fetchSevenSeas(weekStartStr, weekEndStr) {
       const ts = new Date(dateStr + 'T00:00:00Z').getTime();
       if (ts < weekStartTs || ts > weekEndTs) continue;
 
-      // Extract title — look for a linked or bolded title text
-      const titleMatch = stripped.match(/([A-Za-z][A-Za-z0-9 :'\-!?.,]+?)\s+(?:Vol(?:ume)?\.?\s*(\d+))?(?:\s|$)/);
-      if (!titleMatch || titleMatch[1].length < 4) continue;
+      // Prefer the anchor-tag text for the title — it's already the clean title
+      // without surrounding date/price noise and entities are already decoded.
+      let titleEn, volNum;
+      const anchorMatch = decoded.match(/<a[^>]+href="[^"]*sevenseasentertainment\.com[^"]*"[^>]*>([^<]+)<\/a>/i);
+      if (anchorMatch) {
+        const raw = decodeEntities(anchorMatch[1]).trim();
+        const vm  = raw.match(/\s+Vol(?:ume)?\.?\s*(\d+)\s*$/i);
+        volNum  = vm ? parseInt(vm[1]) : null;
+        titleEn = raw.replace(/\s+Vol(?:ume)?\.?\s*\d+\s*$/i, '').trim();
+      } else {
+        // Fallback: extract from decoded stripped text
+        const titleMatch = stripped.match(/([A-Za-z\u00C0-\u024F][^\d]{3,}?)\s+(?:Vol(?:ume)?\.?\s*(\d+))?(?:\s|$)/);
+        if (!titleMatch || titleMatch[1].length < 4) continue;
+        titleEn = titleMatch[1].replace(/\s+/g, ' ').trim();
+        volNum  = titleMatch[2] ? parseInt(titleMatch[2]) : null;
+      }
 
-      const titleEn   = titleMatch[1].replace(/\s+/g, ' ').trim();
-      const volNum    = titleMatch[2] ? parseInt(titleMatch[2]) : null;
+      if (!titleEn || titleEn.length < 3) continue;
       const slug      = titleEn.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
       const releaseId = `manga-volume#ss-${slug}${volNum ? `-v${volNum}` : ''}`;
       const amazonQ   = encodeURIComponent(`${titleEn}${volNum ? ` volume ${volNum}` : ''} manga`);

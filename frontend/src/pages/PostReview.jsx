@@ -48,10 +48,10 @@ function mapManga(item) {
 
 // ── Step 1: search ────────────────────────────────────────────────────────────
 
-function SearchStep({ onSelect, onCreateNew }) {
-  const { i18n } = useTranslation();
+function SearchStep({ onSelect, onCreateNew, initialQuery = '' }) {
+  const { t, i18n } = useTranslation();
   const isJa = i18n.language === 'ja';
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState(initialQuery);
   const [typeFilter, setTypeFilter] = useState('all');
   const [results, setResults] = useState([]);
   const [searching, setSearching] = useState(false);
@@ -127,7 +127,7 @@ function SearchStep({ onSelect, onCreateNew }) {
           type="text"
           value={query}
           onChange={handleChange}
-          placeholder="Search anime or manga title…"
+          placeholder={t('review.search_placeholder')}
           className="w-full bg-gray-800 text-white rounded-xl px-4 py-3 border border-gray-700 focus:outline-none focus:border-purple-500 text-base pr-10"
         />
         {searching && (
@@ -210,13 +210,13 @@ function SearchStep({ onSelect, onCreateNew }) {
       {query.trim().length > 1 && !searching && results.length === 0 && (
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 text-center space-y-3">
           <p className="text-gray-400 text-sm">
-            No results for <span className="text-white font-semibold">"{query}"</span>
+            {t('review.no_results', { query })}
           </p>
           <button
             onClick={() => onCreateNew(query)}
             className="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-5 py-2 rounded-lg transition-colors text-sm"
           >
-            + Add "{query}" to MangaCritic
+            + {t('review.add_title', { query })}
           </button>
         </div>
       )}
@@ -224,12 +224,12 @@ function SearchStep({ onSelect, onCreateNew }) {
       {/* Add option when results exist but title isn't listed */}
       {query.trim().length > 1 && !searching && results.length > 0 && (
         <div className="flex items-center justify-between pt-1 px-1">
-          <p className="text-xs text-gray-600">Not listed?</p>
+          <p className="text-xs text-gray-600">{t('review.not_listed')}</p>
           <button
             onClick={() => onCreateNew(query)}
             className="text-xs text-purple-400 hover:text-purple-300 font-medium transition-colors"
           >
-            + Add "{query}" manually
+            + {t('review.add_manually', { query })}
           </button>
         </div>
       )}
@@ -291,7 +291,7 @@ function ReviewForm({ title, user, onBack, onDone }) {
           {title.year && <p className="text-xs text-gray-500">{title.year}</p>}
         </div>
         <button type="button" onClick={onBack} className="ml-auto text-xs text-gray-500 hover:text-gray-300">
-          ← Change
+          {t('review.change_title')}
         </button>
       </div>
 
@@ -376,7 +376,7 @@ function ReviewForm({ title, user, onBack, onDone }) {
           onChange={(e) => setBody(e.target.value)}
           required
           rows={5}
-          placeholder={language === 'en' ? 'Write your review…' : 'レビューを書いてください…'}
+          placeholder={t('review.body')}
           className="w-full bg-gray-800 text-white rounded-xl px-4 py-3 border border-gray-700 focus:outline-none focus:border-purple-500 resize-none"
         />
       </div>
@@ -388,7 +388,7 @@ function ReviewForm({ title, user, onBack, onDone }) {
         disabled={submitting}
         className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 rounded-xl transition-colors disabled:opacity-50"
       >
-        {submitting ? 'Submitting…' : t('review.submit_btn')}
+        {submitting ? t('review.submitting') : t('review.submit_btn')}
       </button>
     </form>
   );
@@ -397,7 +397,7 @@ function ReviewForm({ title, user, onBack, onDone }) {
 // ── Step 3: create new title + review ────────────────────────────────────────
 
 function CreateTitleForm({ initialName, onBack, onTitleCreated }) {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [form, setForm] = useState({
     titleEn: initialName || '',
     titleJa: '',
@@ -427,7 +427,7 @@ function CreateTitleForm({ initialName, onBack, onTitleCreated }) {
       onTitleCreated(res.data);
     } catch (err) {
       console.error(err);
-      setError('Failed to create title. Please try again.');
+      setError(t('errors.create_title'));
     } finally {
       setCreating(false);
     }
@@ -438,13 +438,13 @@ function CreateTitleForm({ initialName, onBack, onTitleCreated }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="flex items-center gap-2 pb-3 border-b border-gray-800">
-        <button type="button" onClick={onBack} className="text-gray-500 hover:text-gray-300 text-sm">← Back</button>
-        <h3 className="font-bold text-white">Add New Title</h3>
+        <button type="button" onClick={onBack} className="text-gray-500 hover:text-gray-300 text-sm">{t('review.back')}</button>
+        <h3 className="font-bold text-white">{t('review.add_new_title')}</h3>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-xs text-gray-400 mb-1">English Title *</label>
+          <label className="block text-xs text-gray-400 mb-1">{t('review.label_english_title')} *</label>
           <input
             value={form.titleEn}
             onChange={set('titleEn')}
@@ -453,7 +453,7 @@ function CreateTitleForm({ initialName, onBack, onTitleCreated }) {
           />
         </div>
         <div>
-          <label className="block text-xs text-gray-400 mb-1">Japanese Title</label>
+          <label className="block text-xs text-gray-400 mb-1">{t('review.label_japanese_title')}</label>
           <input
             value={form.titleJa}
             onChange={set('titleJa')}
@@ -461,7 +461,7 @@ function CreateTitleForm({ initialName, onBack, onTitleCreated }) {
           />
         </div>
         <div>
-          <label className="block text-xs text-gray-400 mb-1">Studio / Author</label>
+          <label className="block text-xs text-gray-400 mb-1">{t('review.label_studio')}</label>
           <input
             value={form.studio}
             onChange={set('studio')}
@@ -469,7 +469,7 @@ function CreateTitleForm({ initialName, onBack, onTitleCreated }) {
           />
         </div>
         <div>
-          <label className="block text-xs text-gray-400 mb-1">Year</label>
+          <label className="block text-xs text-gray-400 mb-1">{t('review.label_year')}</label>
           <input
             type="number"
             value={form.year}
@@ -483,7 +483,7 @@ function CreateTitleForm({ initialName, onBack, onTitleCreated }) {
 
       {/* Type */}
       <div>
-        <label className="block text-xs text-gray-400 mb-2">Type *</label>
+        <label className="block text-xs text-gray-400 mb-2">{t('review.label_type')} *</label>
         <div className="flex gap-2">
           {['anime', 'manga'].map((t) => (
             <button
@@ -502,7 +502,7 @@ function CreateTitleForm({ initialName, onBack, onTitleCreated }) {
 
       {/* Genres */}
       <div>
-        <label className="block text-xs text-gray-400 mb-2">Genres</label>
+        <label className="block text-xs text-gray-400 mb-2">{t('review.label_genres')}</label>
         <div className="flex flex-wrap gap-2">
           {GENRES.map((g) => (
             <button
@@ -521,7 +521,7 @@ function CreateTitleForm({ initialName, onBack, onTitleCreated }) {
         </div>
       </div>
 
-      <p className="text-xs text-gray-500">Cover art will be fetched automatically from AniList.</p>
+      <p className="text-xs text-gray-500">{t('review.cover_help')}</p>
 
       {error && <p className="text-red-400 text-sm">{error}</p>}
 
@@ -530,7 +530,7 @@ function CreateTitleForm({ initialName, onBack, onTitleCreated }) {
         disabled={creating}
         className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 rounded-xl transition-colors disabled:opacity-50"
       >
-        {creating ? 'Creating…' : 'Create Title & Continue →'}
+        {creating ? t('review.submitting') : t('review.create_continue')}
       </button>
     </form>
   );
@@ -539,23 +539,24 @@ function CreateTitleForm({ initialName, onBack, onTitleCreated }) {
 // ── Success ───────────────────────────────────────────────────────────────────
 
 function SuccessScreen({ titleId, onAnother, onView }) {
+  const { t } = useTranslation();
   return (
     <div className="text-center py-10 space-y-4">
       <div className="text-5xl">🎉</div>
-      <h3 className="text-xl font-bold text-white">Review posted!</h3>
-      <p className="text-gray-400 text-sm">Your score has been added to the aggregate.</p>
+      <h3 className="text-xl font-bold text-white">{t('review.success_title')}</h3>
+      <p className="text-gray-400 text-sm">{t('review.success_body')}</p>
       <div className="flex justify-center gap-3 pt-2">
         <button
           onClick={onView}
           className="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-5 py-2 rounded-lg transition-colors text-sm"
         >
-          View Title
+          {t('review.view_title')}
         </button>
         <button
           onClick={onAnother}
           className="bg-gray-800 hover:bg-gray-700 text-gray-300 px-5 py-2 rounded-lg transition-colors text-sm"
         >
-          Post Another
+          {t('review.post_another')}
         </button>
       </div>
     </div>
@@ -567,16 +568,24 @@ function SuccessScreen({ titleId, onAnother, onView }) {
 export default function PostReview() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
   const [user, setUser] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
 
   const preselected = location.state?.preselectedTitle ?? null;
+  // pendingTitle: raw calendar item not yet in DynamoDB — created after auth confirms
+  const pending = location.state?.pendingTitle ?? null;
 
-  // step: 'search' | 'review' | 'create' | 'done'
-  const [step, setStep] = useState(preselected ? 'review' : 'search');
+  // step: 'search' | 'loading' | 'review' | 'create' | 'done'
+  const [step, setStep] = useState(() => {
+    if (preselected) return 'review';
+    if (pending) return 'loading';
+    return 'search';
+  });
   const [selectedTitle, setSelectedTitle] = useState(preselected);
   const [initialName, setInitialName] = useState('');
   const [doneTitleId, setDoneTitleId] = useState(null);
+  const [pendingError, setPendingError] = useState('');
 
   useEffect(() => {
     getCurrentUser()
@@ -589,6 +598,28 @@ export default function PostReview() {
     if (authChecked && !user) navigate('/login');
   }, [authChecked, user, navigate]);
 
+  // Once auth confirmed, ingest the pending calendar title via find-or-create
+  useEffect(() => {
+    if (!authChecked || !user || !pending || preselected) return;
+    titlesApi.create({
+      titleEn: pending.titleEn,
+      titleJa: pending.titleJa || '',
+      type: pending.type || 'anime',
+      ...(pending.malId && { malId: pending.malId }),
+      ...(pending.coverImageUrl && { coverImageUrl: pending.coverImageUrl }),
+    })
+      .then((res) => {
+        setSelectedTitle(res.data);
+        setStep('review');
+      })
+      .catch(() => {
+        // Creation failed — fall back to search pre-filled with the title name
+        setInitialName(pending.titleEn || '');
+        setPendingError(t('errors.create_title'));
+        setStep('search');
+      });
+  }, [authChecked, user]); // eslint-disable-line react-hooks/exhaustive-deps
+
   if (!authChecked) return null;
 
   const reset = () => {
@@ -596,23 +627,35 @@ export default function PostReview() {
     setSelectedTitle(null);
     setInitialName('');
     setDoneTitleId(null);
+    setPendingError('');
   };
 
   return (
     <div className="max-w-xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-white mb-1">Post a Review</h1>
-        <p className="text-gray-400 text-sm">
-          Rate an existing title or add a new one to MangaCritic.
-        </p>
+        <h1 className="text-2xl font-bold text-white mb-1">{t('review.page_title')}</h1>
+        <p className="text-gray-400 text-sm">{t('review.page_subtitle')}</p>
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+        {step === 'loading' && (
+          <div className="flex flex-col items-center gap-4 py-10">
+            <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+            <p className="text-sm text-gray-400">{t('review.submitting')}</p>
+          </div>
+        )}
+
         {step === 'search' && (
-          <SearchStep
-            onSelect={(title) => { setSelectedTitle(title); setStep('review'); }}
-            onCreateNew={(name) => { setInitialName(name); setStep('create'); }}
-          />
+          <>
+            {pendingError && (
+              <p className="text-red-400 text-sm mb-4">{pendingError}</p>
+            )}
+            <SearchStep
+              initialQuery={initialName}
+              onSelect={(title) => { setSelectedTitle(title); setStep('review'); }}
+              onCreateNew={(name) => { setInitialName(name); setStep('create'); }}
+            />
+          </>
         )}
 
         {step === 'review' && selectedTitle && (

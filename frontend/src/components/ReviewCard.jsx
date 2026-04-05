@@ -8,8 +8,71 @@ function scoreColor(score) {
   return '#EF4444';
 }
 
+// ── External critic review card (read-only, with attribution) ─────────────────
+
+function ExternalCriticCard({ review }) {
+  const { i18n, t } = useTranslation();
+  const lang = i18n.language;
+  return (
+    <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+      <div className="flex items-start gap-3">
+        {/* Score */}
+        <span
+          className="text-2xl font-bold tabular-nums shrink-0"
+          style={{ color: scoreColor(review.score) }}
+        >
+          {review.score}
+        </span>
+
+        <div className="flex-1 min-w-0">
+          {/* Publication + reviewer */}
+          <div className="flex flex-wrap items-center gap-2 mb-1">
+            <span className="bg-gray-800 text-gray-200 text-xs font-bold px-2 py-0.5 rounded">
+              {review.publication}
+            </span>
+            {review.reviewerName && (
+              <span className="text-xs text-gray-400">{review.reviewerName}</span>
+            )}
+          </div>
+
+          {/* Score raw + date */}
+          <p className="text-xs text-gray-600 mb-2">
+            {review.scoreRaw}
+            {review.createdAt && (
+              <> · {new Date(review.createdAt).toLocaleDateString(lang === 'ja' ? 'ja-JP' : 'en-US')}</>
+            )}
+          </p>
+
+          {/* Excerpt */}
+          {review.excerpt && (
+            <p className="text-sm text-gray-400 italic leading-relaxed mb-3">
+              "{review.excerpt}"
+            </p>
+          )}
+
+          {/* Read full review link */}
+          <a
+            href={review.originalUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-xs font-semibold text-purple-400 hover:text-purple-300 transition-colors"
+          >
+            {t('review.read_full')} →
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ReviewCard({ review, titleId, currentUserId, currentUsername, onDeleted }) {
   const { i18n, t } = useTranslation();
+
+  // External critic reviews get their own read-only card
+  if (review.source === 'critic-external') {
+    return <ExternalCriticCard review={review} />;
+  }
+
   const [item, setItem] = useState(review);
   const [translating, setTranslating] = useState(false);
   const [editing, setEditing] = useState(false);

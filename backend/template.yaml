@@ -669,6 +669,32 @@ Resources:
             Path: /releases
             Method: GET
 
+  FetchCriticReviewsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-fetch-critic-reviews"
+      CodeUri: .
+      Handler: src/handlers/fetchCriticReviews.handler
+      Timeout: 30
+      MemorySize: 128
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ReviewsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TitlesTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SeasonScoresTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref VolumeScoresTable
+      Events:
+        DailySchedule:
+          Type: Schedule
+          Properties:
+            Schedule: cron(0 8 * * ? *)
+            Name: !Sub "${AWS::StackName}-fetch-critic-reviews-daily"
+            Description: Scrape critic reviews from ANN, IGN, Otaku USA, CBR, Polygon, AV Club daily at 8am UTC
+            Enabled: true
+
   FetchReleaseCalendarFunction:
     Type: AWS::Serverless::Function
     Properties:

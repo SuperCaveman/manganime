@@ -12,6 +12,7 @@ function stripHtml(str) {
 // ── Section wrapper ──────────────────────────────────────────────────────────
 
 function SectionHeader({ title, to }) {
+  const { t } = useTranslation();
   return (
     <div className="flex items-center justify-between mb-4 border-b border-gray-800 pb-3">
       <h2 className="text-lg font-bold tracking-wide text-white uppercase">{title}</h2>
@@ -20,7 +21,7 @@ function SectionHeader({ title, to }) {
           to={to}
           className="text-xs font-semibold text-purple-400 hover:text-purple-300 transition-colors uppercase tracking-wide"
         >
-          See All →
+          {t('home.seeAll')}
         </Link>
       )}
     </div>
@@ -156,6 +157,7 @@ function LatestTrailers() {
               <p className="text-sm text-gray-400 mt-2 leading-relaxed">{synopsis}</p>
             )}
           </div>
+          <p className="text-xs text-gray-400 mt-3 pt-2 border-t border-gray-800 text-right">Source: YouTube · MyAnimeList via Jikan</p>
         </>
       ) : null}
     </section>
@@ -177,6 +179,7 @@ function ReleaseCardSkeleton() {
 }
 
 function AnimeEpisodeCard({ item, isJa, navigate, allTitles }) {
+  const { t } = useTranslation();
   const displayTitle = isJa && item.titleJa ? item.titleJa : item.titleEn;
   const matched = allTitles?.find((t) => t.malId === item.malId);
   const showReviewBadge = !matched || (matched.reviewCount || 0) === 0;
@@ -199,13 +202,18 @@ function AnimeEpisodeCard({ item, isJa, navigate, allTitles }) {
     } catch { /* ignore */ }
   };
 
-  const handleReviewClick = async (e) => {
+  const handleReviewClick = (e) => {
     e.stopPropagation();
-    try {
-      const title = await findOrCreate();
-      navigate('/post-review', { state: { preselectedTitle: title } });
-    } catch {
-      if (matched) navigate('/post-review', { state: { preselectedTitle: matched } });
+    if (matched) {
+      navigate('/post', { state: { preselectedTitle: matched } });
+    } else {
+      navigate('/post', { state: { pendingTitle: {
+        titleEn: item.titleEn,
+        titleJa: item.titleJa || '',
+        type: 'anime',
+        malId: item.malId,
+        coverImageUrl: item.coverImageUrl || '',
+      }}});
     }
   };
 
@@ -234,14 +242,22 @@ function AnimeEpisodeCard({ item, isJa, navigate, allTitles }) {
         <h4 className="text-xs font-semibold text-white truncate leading-tight">{displayTitle}</h4>
         <p className="text-xs text-gray-500 mt-0.5 truncate">
           {new Date(item.releaseDate + 'T00:00:00Z').toLocaleDateString(isJa ? 'ja-JP' : 'en-US', { month: 'short', day: 'numeric' })}
-          {' · '}{item.platform || 'Streaming'}
         </p>
+        {item.platform && item.platform !== 'Streaming' ? (
+          <span className="inline-block text-[9px] font-bold px-1.5 py-0.5 rounded bg-orange-900/60 text-orange-300 leading-none mt-0.5">
+            {item.platform}
+          </span>
+        ) : (
+          <span className="inline-block text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-900/60 text-blue-400 leading-none mt-0.5">
+            Streaming
+          </span>
+        )}
         {showReviewBadge && (
           <button
             onClick={handleReviewClick}
             className="mt-1.5 w-full text-center text-xs py-0.5 bg-purple-700/80 hover:bg-purple-600 text-purple-100 rounded font-medium transition-colors"
           >
-            ✍ Be first to review
+            ✍ {t('calendar.beFirstToReview')}
           </button>
         )}
       </div>
@@ -299,6 +315,7 @@ async function fetchMangaCoverUrl(titleEn) {
 }
 
 function MangaVolumeCard({ item, isJa, navigate, allTitles }) {
+  const { t } = useTranslation();
   const displayTitle = isJa && item.titleJa ? item.titleJa : item.titleEn;
   const [coverUrl, setCoverUrl] = useState(item.coverImageUrl || '');
   const [imgFailed, setImgFailed] = useState(false);
@@ -314,20 +331,19 @@ function MangaVolumeCard({ item, isJa, navigate, allTitles }) {
     return () => { cancelled = true; };
   }, [item.titleEn, item.coverImageUrl]);
 
-  const handleReviewClick = async (e) => {
+  const handleReviewClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    try {
-      const res = await titlesApi.create({
+    if (matched) {
+      navigate('/post', { state: { preselectedTitle: matched } });
+    } else {
+      navigate('/post', { state: { pendingTitle: {
         titleEn: item.titleEn,
         titleJa: item.titleJa || '',
         type: 'manga',
         coverImageUrl: coverUrl || '',
-        publisher: item.publisher || '',
-      });
-      navigate('/post-review', { state: { preselectedTitle: res.data } });
-    } catch {
-      if (matched) navigate('/post-review', { state: { preselectedTitle: matched } });
+        volumeNumber: item.volumeNumber || null,
+      }}});
     }
   };
 
@@ -359,9 +375,12 @@ function MangaVolumeCard({ item, isJa, navigate, allTitles }) {
         <h4 className="text-xs font-semibold text-white truncate leading-tight">{displayTitle}</h4>
         <p className="text-xs text-gray-500 mt-0.5 truncate">
           {item.volumeNumber ? `Vol. ${item.volumeNumber}` : ''}
-          {item.volumeNumber && item.publisher ? ' · ' : ''}
-          {item.publisher || ''}
         </p>
+        {item.publisher && (
+          <span className="inline-block text-[9px] font-bold px-1.5 py-0.5 rounded bg-purple-900/60 text-purple-300 leading-none mt-0.5">
+            {item.publisher}
+          </span>
+        )}
         <p className="text-xs text-gray-600 mt-0.5">
           {new Date(item.releaseDate + 'T00:00:00Z').toLocaleDateString(isJa ? 'ja-JP' : 'en-US', { month: 'short', day: 'numeric' })}
         </p>
@@ -370,7 +389,7 @@ function MangaVolumeCard({ item, isJa, navigate, allTitles }) {
             onClick={handleReviewClick}
             className="mt-1.5 w-full text-center text-xs py-0.5 bg-purple-700/80 hover:bg-purple-600 text-purple-100 rounded font-medium transition-colors"
           >
-            ✍ Be first to review
+            ✍ {t('calendar.beFirstToReview')}
           </button>
         )}
       </div>
@@ -378,15 +397,17 @@ function MangaVolumeCard({ item, isJa, navigate, allTitles }) {
   );
 }
 
-function ReleaseRow({ label, items, emptyLabel, renderCard }) {
+function ReleaseRow({ label, items, renderCard }) {
   if (!items || items.length === 0) return null;
   return (
-    <div className="mb-4">
+    <div className="mb-2">
       <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">{label}</h3>
-      <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2">
-        {items.map((item, i) => (
-          <div key={item.releaseId || i}>{renderCard(item)}</div>
-        ))}
+      <div className="overflow-x-auto scrollbar-hide">
+        <div className="flex gap-3 pb-2">
+          {items.map((item, i) => (
+            <div key={item.releaseId || i}>{renderCard(item)}</div>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -409,10 +430,12 @@ function ReleaseCalendarSection({ week, allTitles }) {
   }, [week]);
 
   const sectionTitle = week === 'current' ? t('calendar.this_week') : t('calendar.next_week');
-  const hasContent = data && (
-    (data.animeEpisodes?.length > 0) ||
-    (data.mangaVolumes?.length > 0)
-  );
+
+  const animeEpisodes = data?.animeEpisodes || [];
+  const mangaFiltered = (data?.mangaVolumes || []).filter((item) => item.coverImageUrl);
+  const mangaPublishers = [...new Set(mangaFiltered.map((i) => i.publisher).filter(Boolean))].join(' · ');
+  const animePhysical = data?.animePhysical || [];
+  const hasContent = animeEpisodes.length > 0 || mangaFiltered.length > 0;
 
   return (
     <section>
@@ -439,31 +462,46 @@ function ReleaseCalendarSection({ week, allTitles }) {
       ) : !hasContent ? (
         <p className="text-gray-500 text-sm py-4">{t('calendar.empty')}</p>
       ) : (
-        <>
-          <ReleaseRow
-            label={t('calendar.anime_episodes')}
-            items={data.animeEpisodes}
-            renderCard={(item) => (
-              <AnimeEpisodeCard item={item} isJa={isJa} navigate={navigate} allTitles={allTitles} />
-            )}
-          />
-          <ReleaseRow
-            label={t('calendar.manga_volumes')}
-            items={data.mangaVolumes.filter((item) => item.coverImageUrl)}
-            renderCard={(item) => (
-              <MangaVolumeCard item={item} isJa={isJa} navigate={navigate} allTitles={allTitles} />
-            )}
-          />
-          {data.animePhysical?.length > 0 && (
-            <ReleaseRow
-              label={t('calendar.bluray_dvd')}
-              items={data.animePhysical}
-              renderCard={(item) => (
-                <MangaVolumeCard item={item} isJa={isJa} navigate={navigate} allTitles={allTitles} />
-              )}
-            />
+        <div>
+          {animeEpisodes.length > 0 && (
+            <div className="mb-5">
+              <ReleaseRow
+                label={t('calendar.anime_episodes')}
+                items={animeEpisodes}
+                renderCard={(item) => (
+                  <AnimeEpisodeCard item={item} isJa={isJa} navigate={navigate} allTitles={allTitles} />
+                )}
+              />
+              <p className="text-xs text-gray-400 mt-3 pt-2 border-t border-gray-800 text-right">Source: Crunchyroll · HiDive</p>
+            </div>
           )}
-        </>
+          {mangaFiltered.length > 0 && (
+            <div className="mb-5">
+              <ReleaseRow
+                label={t('calendar.manga_volumes')}
+                items={mangaFiltered}
+                renderCard={(item) => (
+                  <MangaVolumeCard item={item} isJa={isJa} navigate={navigate} allTitles={allTitles} />
+                )}
+              />
+              <p className="text-xs text-gray-400 mt-3 pt-2 border-t border-gray-800 text-right">
+                {mangaPublishers ? `Source: ${mangaPublishers}` : 'Source: Seven Seas · Viz · Yen Press · Kodansha'}
+              </p>
+            </div>
+          )}
+          {animePhysical.length > 0 && (
+            <div className="mb-5">
+              <ReleaseRow
+                label={t('calendar.bluray_dvd')}
+                items={animePhysical}
+                renderCard={(item) => (
+                  <MangaVolumeCard item={item} isJa={isJa} navigate={navigate} allTitles={allTitles} />
+                )}
+              />
+              <p className="text-xs text-gray-400 mt-3 pt-2 border-t border-gray-800 text-right">Source: Right Stuf · Funimation</p>
+            </div>
+          )}
+        </div>
       )}
     </section>
   );
@@ -540,54 +578,59 @@ function NinetiesSpotlight() {
         </h2>
         <p className="text-xs text-gray-500 mt-0.5">{t('home.nineties_subtitle')}</p>
       </div>
-      <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-2">
-        {loading
-          ? Array.from({ length: 6 }).map((_, i) => <CardSkeleton key={i} />)
-          : items.map((title) => {
-              const displayTitle = isJa && title.titleJa ? title.titleJa : title.titleEn;
-              const score = title.malScore != null ? Math.round(title.malScore * 10) : null;
-              const isLoading = selecting === title.malId;
-              return (
-                <button
-                  key={`${title.type}-${title.malId}`}
-                  onClick={() => handleClick(title)}
-                  disabled={selecting !== null}
-                  className="w-44 shrink-0 bg-gray-900 rounded-xl overflow-hidden border border-gray-800 hover:border-purple-600 transition-colors group text-left disabled:opacity-60"
-                >
-                  <div className="relative aspect-[3/4] bg-gray-800 overflow-hidden">
-                    {title.coverImageUrl ? (
-                      <img
-                        src={title.coverImageUrl}
-                        alt={displayTitle}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-3xl text-gray-600">
-                        {title.type === 'anime' ? '🎬' : '📖'}
-                      </div>
-                    )}
-                    <span className={`absolute top-2 left-2 text-xs font-semibold px-2 py-0.5 rounded-full ${
-                      title.type === 'anime' ? 'bg-blue-900/90 text-blue-200' : 'bg-orange-900/90 text-orange-200'
-                    }`}>
-                      {isJa ? (title.type === 'anime' ? 'アニメ' : 'マンガ') : title.type.toUpperCase()}
-                    </span>
-                    {isLoading && (
-                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                        <div className="w-6 h-6 border-2 border-purple-400 border-t-transparent rounded-full animate-spin" />
-                      </div>
-                    )}
-                  </div>
-                  <div className="p-3">
-                    <h3 className="text-sm font-semibold text-white truncate mb-2">{displayTitle}</h3>
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-xs text-gray-500">{title.year || '—'}</span>
-                      <ScoreBadge score={score} />
+      <div className="overflow-x-auto scrollbar-hide">
+        <div className="flex gap-4 pb-2">
+          {loading
+            ? Array.from({ length: 6 }).map((_, i) => <CardSkeleton key={i} />)
+            : items.map((title) => {
+                const displayTitle = isJa && title.titleJa ? title.titleJa : title.titleEn;
+                const score = title.malScore != null ? Math.round(title.malScore * 10) : null;
+                const isLoading = selecting === title.malId;
+                return (
+                  <button
+                    key={`${title.type}-${title.malId}`}
+                    onClick={() => handleClick(title)}
+                    disabled={selecting !== null}
+                    className="w-44 shrink-0 bg-gray-900 rounded-xl overflow-hidden border border-gray-800 hover:border-purple-600 transition-colors group text-left disabled:opacity-60"
+                  >
+                    <div className="relative aspect-[3/4] bg-gray-800 overflow-hidden">
+                      {title.coverImageUrl ? (
+                        <img
+                          src={title.coverImageUrl}
+                          alt={displayTitle}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-3xl text-gray-600">
+                          {title.type === 'anime' ? '🎬' : '📖'}
+                        </div>
+                      )}
+                      <span className={`absolute top-2 left-2 text-xs font-semibold px-2 py-0.5 rounded-full ${
+                        title.type === 'anime' ? 'bg-blue-900/90 text-blue-200' : 'bg-orange-900/90 text-orange-200'
+                      }`}>
+                        {isJa ? (title.type === 'anime' ? 'アニメ' : 'マンガ') : title.type.toUpperCase()}
+                      </span>
+                      {isLoading && (
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                          <div className="w-6 h-6 border-2 border-purple-400 border-t-transparent rounded-full animate-spin" />
+                        </div>
+                      )}
                     </div>
-                  </div>
-                </button>
-              );
-            })}
+                    <div className="p-3">
+                      <h3 className="text-sm font-semibold text-white truncate mb-2">{displayTitle}</h3>
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-xs text-gray-500">{title.year || '—'}</span>
+                        <ScoreBadge score={score} />
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+        </div>
       </div>
+      {!loading && items.length > 0 && (
+        <p className="text-xs text-gray-400 mt-3 pt-2 border-t border-gray-800 text-right">Source: MyAnimeList via Jikan</p>
+      )}
     </section>
   );
 }
@@ -651,9 +694,7 @@ export default function Home() {
 
         {/* Anime */}
         <section>
-          <SectionHeader
-            title={i18n.language === 'ja' ? 'アニメ' : 'Anime'}
-          />
+          <SectionHeader title={t('home.filter.anime')} />
           {loading ? (
             <ListSkeleton rows={3} />
           ) : anime.length === 0 ? (
@@ -665,13 +706,14 @@ export default function Home() {
               ))}
             </div>
           )}
+          {!loading && anime.length > 0 && (
+            <p className="text-xs text-gray-400 mt-3 pt-2 border-t border-gray-800 text-right">Source: MyAnimeList via Jikan</p>
+          )}
         </section>
 
         {/* Manga */}
         <section>
-          <SectionHeader
-            title={i18n.language === 'ja' ? 'マンガ' : 'Manga'}
-          />
+          <SectionHeader title={t('home.filter.manga')} />
           {loading ? (
             <ListSkeleton rows={3} />
           ) : manga.length === 0 ? (
@@ -683,13 +725,16 @@ export default function Home() {
               ))}
             </div>
           )}
+          {!loading && manga.length > 0 && (
+            <p className="text-xs text-gray-400 mt-3 pt-2 border-t border-gray-800 text-right">Source: MyAnimeList via Jikan</p>
+          )}
         </section>
 
       </div>
 
       {/* ── Latest News ──────────────────────────────────────────── */}
       <section>
-        <SectionHeader title="Latest Anime & Manga News" />
+        <SectionHeader title={t('home.latestNews')} />
         {newsLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {Array.from({ length: 6 }).map((_, i) => (
@@ -697,7 +742,7 @@ export default function Home() {
             ))}
           </div>
         ) : newsItems.length === 0 ? (
-          <p className="text-gray-500 text-sm py-4">No news available.</p>
+          <p className="text-gray-500 text-sm py-4">{t('home.noNews')}</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {newsItems.map((item, i) => (
@@ -735,7 +780,7 @@ export default function Home() {
             ))}
           </div>
         )}
-        {newsSource && <p className="text-xs text-gray-600 mt-3 text-right">Source: {newsSource}</p>}
+        {newsSource && <p className="text-xs text-gray-500 mt-3 text-right">{t('home.newsSource', { source: newsSource })}</p>}
       </section>
 
       {/* ── 90s Spotlight ────────────────────────────────────────── */}

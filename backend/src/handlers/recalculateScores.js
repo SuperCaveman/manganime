@@ -133,7 +133,7 @@ async function writeSeasonScores(titleId, allReviews) {
 
   const now = new Date().toISOString();
   for (const [seasonNumber, revs] of bySeason) {
-    const crit = revs.filter(r => r.source === 'critic');
+    const crit = revs.filter(r => r.source === 'critic' || r.source === 'critic-external');
     const user = revs.filter(r => r.source === 'user');
     await ddb.send(new PutCommand({
       TableName: process.env.SEASON_SCORES_TABLE,
@@ -172,7 +172,7 @@ async function writeVolumeScores(titleId, allReviews) {
 
   const now = new Date().toISOString();
   for (const [volumeNumber, revs] of byVolume) {
-    const crit = revs.filter(r => r.source === 'critic');
+    const crit = revs.filter(r => r.source === 'critic' || r.source === 'critic-external');
     const user = revs.filter(r => r.source === 'user');
     await ddb.send(new PutCommand({
       TableName: process.env.VOLUME_SCORES_TABLE,
@@ -191,7 +191,7 @@ async function writeVolumeScores(titleId, allReviews) {
 
 // ── write Titles table ─────────────────────────────────────────────────────────
 
-async function updateTitleScores(titleId, criticScore, userScore, userCount) {
+async function updateTitleScores(titleId, criticScore, userScore, userCount, criticPublications) {
   const setExprs = ['reviewCount = :rc'];
   const removeExprs = [];
   const vals = { ':rc': userCount };
@@ -201,6 +201,13 @@ async function updateTitleScores(titleId, criticScore, userScore, userCount) {
 
   if (userScore !== null)   { setExprs.push('userScore = :us');   vals[':us'] = userScore;   }
   else { removeExprs.push('userScore'); }
+
+  if (criticPublications?.length) {
+    setExprs.push('criticPublications = :cp');
+    vals[':cp'] = criticPublications;
+  } else {
+    removeExprs.push('criticPublications');
+  }
 
   let expr = `SET ${setExprs.join(', ')}`;
   if (removeExprs.length) expr += ` REMOVE ${removeExprs.join(', ')}`;
@@ -222,8 +229,12 @@ async function recalculate(titleId) {
   ]);
 
   const titleType   = titleRes.Item?.type;
-  const criticRevs  = allReviews.filter(r => r.source === 'critic');
+  const criticRevs  = allReviews.filter(r => r.source === 'critic' || r.source === 'critic-external');
   const userRevs    = allReviews.filter(r => r.source === 'user');
+
+  // Collect unique publication names from external critic reviews for display
+  const extRevs = allReviews.filter(r => r.source === 'critic-external');
+  const criticPublications = [...new Set(extRevs.map(r => r.publication).filter(Boolean))];
 
   let criticScore, userScore;
 
@@ -241,7 +252,7 @@ async function recalculate(titleId) {
     userScore   = userRevs.length   ? roundedAvg(userRevs.map(r => r.score))   : null;
   }
 
-  await updateTitleScores(titleId, criticScore, userScore, userRevs.length);
+  await updateTitleScores(titleId, criticScore, userScore, userRevs.length, criticPublications);
 }
 
 module.exports = { recalculate };

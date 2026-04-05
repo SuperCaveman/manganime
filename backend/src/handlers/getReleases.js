@@ -9,7 +9,9 @@ const TABLE = process.env.RELEASE_CALENDAR_TABLE;
 function getMondayUTC(offsetWeeks = 0) {
   const now = new Date();
   const day = now.getUTCDay();
-  const daysToMonday = day === 0 ? -6 : 1 - day;
+  // Sunday (0) looks forward to the next Monday (+1) rather than back to the
+  // previous Monday (-6), so "this week" on a Sunday shows the upcoming week.
+  const daysToMonday = day === 0 ? 1 : 1 - day;
   const monday = new Date(now);
   monday.setUTCDate(now.getUTCDate() + daysToMonday + offsetWeeks * 7);
   monday.setUTCHours(0, 0, 0, 0);

@@ -4,7 +4,8 @@
     "login": "Log In",
     "logout": "Log Out",
     "signup": "Sign Up",
-    "profile": "View Profile"
+    "profile": "View Profile",
+    "post_review": "Post a Review"
   },
   "home": {
     "title": "MangaCritic",
@@ -13,6 +14,10 @@
     "nineties_title": "90s Spotlight",
     "nineties_subtitle": "Classics from the golden era",
     "trailers_title": "Latest Trailers",
+    "latestNews": "Latest Anime & Manga News",
+    "noNews": "No news available.",
+    "newsSource": "Source: {{source}}",
+    "seeAll": "See All →",
     "filter": {
       "all": "All",
       "anime": "Anime",
@@ -80,7 +85,32 @@
     "tab_episode": "By Episode",
     "volume_label": "Volume",
     "season_label": "Season",
-    "episode_label": "Ep"
+    "episode_label": "Ep",
+    "search_placeholder": "Search anime or manga title…",
+    "no_results": "No results for \"{{query}}\"",
+    "add_title": "Add \"{{query}}\" to MangaCritic",
+    "not_listed": "Not listed?",
+    "add_manually": "Add \"{{query}}\" manually",
+    "change_title": "← Change",
+    "submitting": "Submitting…",
+    "back": "← Back",
+    "add_new_title": "Add New Title",
+    "label_english_title": "English Title",
+    "label_japanese_title": "Japanese Title",
+    "label_studio": "Studio / Author",
+    "label_year": "Year",
+    "label_type": "Type",
+    "label_genres": "Genres",
+    "cover_help": "Cover art will be fetched automatically from AniList.",
+    "create_continue": "Create Title & Continue →",
+    "success_title": "Review posted!",
+    "success_body": "Your score has been added to the aggregate.",
+    "view_title": "View Title",
+    "post_another": "Post Another",
+    "page_title": "Post a Review",
+    "page_subtitle": "Rate an existing title or add a new one to MangaCritic.",
+    "read_full": "Read full review",
+    "critic_disclaimer": "Critic scores and excerpts are sourced from third-party publications. Click to read the full review."
   },
   "auth": {
     "username": "Username",
@@ -117,10 +147,21 @@
     "volume": "Vol",
     "buy": "Buy",
     "empty": "No releases found.",
-    "bluray_stub": "Physical release data coming soon."
+    "bluray_stub": "Physical release data coming soon.",
+    "beFirstToReview": "Be the first to review"
+  },
+  "title": {
+    "fetch_cover": "Fetch Cover",
+    "fetching": "Fetching…",
+    "buy_stream_amazon": "Buy / Stream on Amazon",
+    "buy_manga_amazon": "Buy on Amazon",
+    "want_to_rate": "Want to rate this?",
+    "login_to_review": "Log in to review",
+    "not_found": "Title not found."
   },
   "errors": {
     "loading": "Failed to load. Please try again.",
-    "submit": "Failed to submit. Please try again."
+    "submit": "Failed to submit. Please try again.",
+    "create_title": "Failed to create title. Please try again."
   }
 }

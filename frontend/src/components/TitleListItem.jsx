@@ -2,6 +2,15 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import ScoreBadge from './ScoreBadge';
 
+const PUB_ABBR = {
+  'Anime News Network': 'ANN',
+  'IGN':                'IGN',
+  'Otaku USA':          'OUS',
+  'ComicBookRoundup':   'CBR',
+  'Polygon':            'POL',
+  'The A.V. Club':      'AVC',
+};
+
 export default function TitleListItem({ title, rank }) {
   const { i18n } = useTranslation();
   const isJa = i18n.language === 'ja';
@@ -45,10 +54,20 @@ export default function TitleListItem({ title, rank }) {
         )}
       </div>
 
-      <div className="shrink-0">
-        <ScoreBadge
-          score={title.criticScore ?? title.userScore ?? null}
-        />
+      <div className="shrink-0 flex flex-col items-end gap-1">
+        <ScoreBadge score={title.criticScore ?? title.userScore ?? null} />
+        {title.criticPublications?.length > 0 && (
+          <div className="flex gap-0.5">
+            {title.criticPublications.slice(0, 3).map((pub) => (
+              <span
+                key={pub}
+                className="text-[9px] font-bold px-1 py-0.5 rounded bg-gray-800 text-gray-500 leading-none"
+              >
+                {PUB_ABBR[pub] ?? pub.slice(0, 3).toUpperCase()}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
     </Link>
   );
