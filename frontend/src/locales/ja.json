@@ -1,0 +1,99 @@
+{
+  "nav": {
+    "home": "ホーム",
+    "login": "ログイン",
+    "logout": "ログアウト",
+    "signup": "登録",
+    "profile": "プロフィール"
+  },
+  "home": {
+    "title": "MangaCritic",
+    "subtitle": "アニメ・マンガレビューの決定版",
+    "empty": "タイトルが見つかりません。",
+    "filter": {
+      "all": "すべて",
+      "anime": "アニメ",
+      "manga": "マンガ",
+      "genre": "ジャンル",
+      "year": "年"
+    }
+  },
+  "scores": {
+    "critic": "批評家",
+    "user": "ユーザー",
+    "reviews": "レビュー",
+    "na": "N/A",
+    "season": "シーズン",
+    "volume": "巻",
+    "season_scores": "シーズン別スコア",
+    "volume_scores": "巻別スコア"
+  },
+  "profile": {
+    "title": "マイプロフィール",
+    "username": "ユーザー名",
+    "email": "メールアドレス",
+    "edit_username": "ユーザー名を変更",
+    "save": "保存",
+    "saved": "保存しました！",
+    "my_reviews": "マイレビュー",
+    "no_reviews": "まだレビューを投稿していません。",
+    "notifications": "通知",
+    "notifications_soon": "いいね・通知機能は近日公開予定です。"
+  },
+  "review": {
+    "submit": "レビューを書く",
+    "score": "スコア（0〜100）",
+    "body": "レビュー本文",
+    "language": "レビュー言語",
+    "submit_btn": "送信",
+    "cancel": "キャンセル",
+    "translate": "翻訳",
+    "translating": "翻訳中…",
+    "no_reviews": "まだレビューがありません。最初のレビュアーになりましょう！",
+    "critic_reviews": "批評家レビュー",
+    "user_reviews": "ユーザーレビュー",
+    "critic_label": "批評家",
+    "user_label": "ユーザー",
+    "edit": "編集",
+    "delete": "削除",
+    "confirm_delete": "削除を確認",
+    "save_edit": "保存",
+    "granularity": "レビュー対象",
+    "gran_series": "シリーズ全体",
+    "gran_season": "シーズン",
+    "gran_episode": "エピソード",
+    "gran_volume": "巻",
+    "season_number": "シーズン番号",
+    "episode_number": "エピソード番号",
+    "volume_number": "巻番号",
+    "gran_movie": "映画"
+  },
+  "auth": {
+    "username": "ユーザー名",
+    "email": "メールアドレス",
+    "password": "パスワード",
+    "login": "ログイン",
+    "signup": "登録",
+    "confirm": "アカウント確認",
+    "confirm_code": "確認コード",
+    "confirm_btn": "確認",
+    "have_account": "すでにアカウントをお持ちですか？",
+    "no_account": "アカウントをお持ちでない方は",
+    "check_email": "メールに確認コードが届きます。"
+  },
+  "comment": {
+    "placeholder": "コメントを書く…",
+    "submit": "投稿",
+    "login_to_comment": "コメントするにはログインしてください。"
+  },
+  "notifications": {
+    "title": "通知",
+    "unread": "件未読",
+    "empty": "新しい通知はありません。",
+    "commented": "があなたのレビューにコメントしました"
+  },
+  "errors": {
+    "loading": "読み込みに失敗しました。もう一度お試しください。",
+    "submit": "送信に失敗しました。もう一度お試しください。"
+  }
+}

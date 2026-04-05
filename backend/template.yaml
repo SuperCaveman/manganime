@@ -1,0 +1,666 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: MangaCritic — bilingual anime/manga review aggregation
+
+Globals:
+  Function:
+    Runtime: nodejs20.x
+    MemorySize: 128
+    Timeout: 10
+    Environment:
+      Variables:
+        TITLES_TABLE: !Ref TitlesTable
+        REVIEWS_TABLE: !Ref ReviewsTable
+        USERS_TABLE: !Ref UsersTable
+        USER_POOL_ID: !Ref UserPool
+        USER_POOL_CLIENT_ID: !Ref UserPoolClient
+        SEASON_SCORES_TABLE: !Ref SeasonScoresTable
+        VOLUME_SCORES_TABLE: !Ref VolumeScoresTable
+        COMMENTS_TABLE: !Ref CommentsTable
+        NOTIFICATIONS_TABLE: !Ref NotificationsTable
+
+Resources:
+
+  # ── DynamoDB ───────────────────────────────────────────────────────────────
+
+  TitlesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${AWS::StackName}-titles"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: titleId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: titleId
+          KeyType: HASH
+
+  ReviewsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${AWS::StackName}-reviews"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: titleId
+          AttributeType: S
+        - AttributeName: reviewId
+          AttributeType: S
+        - AttributeName: source
+          AttributeType: S
+        - AttributeName: userId
+          AttributeType: S
+        - AttributeName: createdAt
+          AttributeType: S
+      KeySchema:
+        - AttributeName: titleId
+          KeyType: HASH
+        - AttributeName: reviewId
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: SourceIndex
+          KeySchema:
+            - AttributeName: source
+              KeyType: HASH
+            - AttributeName: createdAt
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: UserIndex
+          KeySchema:
+            - AttributeName: userId
+              KeyType: HASH
+            - AttributeName: createdAt
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+
+  UsersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${AWS::StackName}-users"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: userId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: userId
+          KeyType: HASH
+
+  SeasonScoresTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${AWS::StackName}-season-scores"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: titleId
+          AttributeType: S
+        - AttributeName: seasonNumber
+          AttributeType: N
+      KeySchema:
+        - AttributeName: titleId
+          KeyType: HASH
+        - AttributeName: seasonNumber
+          KeyType: RANGE
+
+  VolumeScoresTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${AWS::StackName}-volume-scores"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: titleId
+          AttributeType: S
+        - AttributeName: volumeNumber
+          AttributeType: N
+      KeySchema:
+        - AttributeName: titleId
+          KeyType: HASH
+        - AttributeName: volumeNumber
+          KeyType: RANGE
+
+  CommentsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${AWS::StackName}-comments"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: reviewId
+          AttributeType: S
+        - AttributeName: commentId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: reviewId
+          KeyType: HASH
+        - AttributeName: commentId
+          KeyType: RANGE
+
+  NotificationsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${AWS::StackName}-notifications"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: userId
+          AttributeType: S
+        - AttributeName: notificationId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: userId
+          KeyType: HASH
+        - AttributeName: notificationId
+          KeyType: RANGE
+
+  # ── Cognito ────────────────────────────────────────────────────────────────
+
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: !Sub "${AWS::StackName}-users"
+      UsernameAttributes:
+        - email
+      AutoVerifiedAttributes:
+        - email
+      Schema:
+        - Name: preferred_locale
+          AttributeDataType: String
+          Mutable: true
+          Required: false
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireUppercase: true
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireSymbols: false
+
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: !Sub "${AWS::StackName}-web-client"
+      UserPoolId: !Ref UserPool
+      GenerateSecret: false
+      ExplicitAuthFlows:
+        - ALLOW_USER_SRP_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+        - ALLOW_USER_PASSWORD_AUTH
+
+  # ── S3 + CloudFront ────────────────────────────────────────────────────────
+
+  FrontendBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${AWS::StackName}-frontend-${AWS::AccountId}"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  CloudFrontOAC:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: !Sub "${AWS::StackName}-oac"
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Origins:
+          - Id: S3Origin
+            DomainName: !GetAtt FrontendBucket.RegionalDomainName
+            S3OriginConfig:
+              OriginAccessIdentity: ""
+            OriginAccessControlId: !GetAtt CloudFrontOAC.Id
+        DefaultRootObject: index.html
+        Enabled: true
+        HttpVersion: http2
+        DefaultCacheBehavior:
+          AllowedMethods: [GET, HEAD, OPTIONS]
+          CachedMethods: [GET, HEAD]
+          TargetOriginId: S3Origin
+          ViewerProtocolPolicy: redirect-to-https
+          # CachingOptimized managed policy
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
+        CustomErrorResponses:
+          - ErrorCode: 403
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+          - ErrorCode: 404
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+        PriceClass: PriceClass_100
+
+  FrontendBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    DependsOn: CloudFrontDistribution
+    Properties:
+      Bucket: !Ref FrontendBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Action: s3:GetObject
+            Resource: !Sub "${FrontendBucket.Arn}/*"
+            Condition:
+              StringEquals:
+                AWS:SourceArn: !Sub "arn:aws:cloudfront::${AWS::AccountId}:distribution/${CloudFrontDistribution}"
+
+  # ── HTTP API ───────────────────────────────────────────────────────────────
+
+  HttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      CorsConfiguration:
+        AllowOrigins:
+          - "*"
+        AllowHeaders:
+          - Content-Type
+          - Authorization
+        AllowMethods:
+          - GET
+          - POST
+          - PATCH
+          - DELETE
+          - OPTIONS
+      Auth:
+        Authorizers:
+          CognitoJwtAuthorizer:
+            IdentitySource: $request.header.Authorization
+            JwtConfiguration:
+              issuer: !Sub "https://cognito-idp.${AWS::Region}.amazonaws.com/${UserPool}"
+              audience:
+                - !Ref UserPoolClient
+
+  # ── Lambda Functions ───────────────────────────────────────────────────────
+
+  GetTitleFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-get-title"
+      CodeUri: .
+      Handler: src/handlers/getTitle.handler
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref TitlesTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /titles/{titleId}
+            Method: GET
+
+  ListTitlesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-list-titles"
+      CodeUri: .
+      Handler: src/handlers/listTitles.handler
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref TitlesTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /titles
+            Method: GET
+
+  SubmitReviewFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-submit-review"
+      CodeUri: .
+      Handler: src/handlers/submitReview.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ReviewsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TitlesTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SeasonScoresTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref VolumeScoresTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /titles/{titleId}/reviews
+            Method: POST
+            Auth:
+              Authorizer: CognitoJwtAuthorizer
+
+  TranslateReviewFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-translate-review"
+      CodeUri: .
+      Handler: src/handlers/translateReview.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ReviewsTable
+        - Statement:
+            - Effect: Allow
+              Action:
+                - translate:TranslateText
+              Resource: "*"
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /titles/{titleId}/reviews/{reviewId}/translate
+            Method: POST
+
+  GetReviewsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-get-reviews"
+      CodeUri: .
+      Handler: src/handlers/getReviews.handler
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref ReviewsTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /titles/{titleId}/reviews
+            Method: GET
+
+  CreateTitleFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-create-title"
+      CodeUri: .
+      Handler: src/handlers/createTitle.handler
+      Timeout: 15
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TitlesTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /titles
+            Method: POST
+            Auth:
+              Authorizer: CognitoJwtAuthorizer
+
+  FetchCoverImageFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-fetch-cover"
+      CodeUri: .
+      Handler: src/handlers/fetchCoverImage.handler
+      Timeout: 15
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TitlesTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /titles/{titleId}/fetch-cover
+            Method: POST
+
+  DeleteReviewFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-delete-review"
+      CodeUri: .
+      Handler: src/handlers/deleteReview.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ReviewsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TitlesTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SeasonScoresTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref VolumeScoresTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /titles/{titleId}/reviews/{reviewId}
+            Method: DELETE
+            Auth:
+              Authorizer: CognitoJwtAuthorizer
+
+  UpdateReviewFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-update-review"
+      CodeUri: .
+      Handler: src/handlers/updateReview.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ReviewsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TitlesTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SeasonScoresTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref VolumeScoresTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /titles/{titleId}/reviews/{reviewId}
+            Method: PATCH
+            Auth:
+              Authorizer: CognitoJwtAuthorizer
+
+  GetUserReviewsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-get-user-reviews"
+      CodeUri: .
+      Handler: src/handlers/getUserReviews.handler
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref ReviewsTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /users/me/reviews
+            Method: GET
+            Auth:
+              Authorizer: CognitoJwtAuthorizer
+
+  RecalculateScoresFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-recalculate-scores"
+      CodeUri: .
+      Handler: src/handlers/recalculateScores.handler
+      Timeout: 30
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ReviewsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TitlesTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SeasonScoresTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref VolumeScoresTable
+
+  GetSeasonScoresFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-get-season-scores"
+      CodeUri: .
+      Handler: src/handlers/getSeasonScores.handler
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref SeasonScoresTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /titles/{titleId}/season-scores
+            Method: GET
+
+  GetVolumeScoresFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-get-volume-scores"
+      CodeUri: .
+      Handler: src/handlers/getVolumeScores.handler
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref VolumeScoresTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /titles/{titleId}/volume-scores
+            Method: GET
+
+  PostCommentFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-post-comment"
+      CodeUri: .
+      Handler: src/handlers/postComment.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref CommentsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref NotificationsTable
+        - DynamoDBReadPolicy:
+            TableName: !Ref ReviewsTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /titles/{titleId}/reviews/{reviewId}/comments
+            Method: POST
+            Auth:
+              Authorizer: CognitoJwtAuthorizer
+
+  GetCommentsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-get-comments"
+      CodeUri: .
+      Handler: src/handlers/getComments.handler
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref CommentsTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /titles/{titleId}/reviews/{reviewId}/comments
+            Method: GET
+
+  GetNotificationsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-get-notifications"
+      CodeUri: .
+      Handler: src/handlers/getNotifications.handler
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref NotificationsTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /users/me/notifications
+            Method: GET
+            Auth:
+              Authorizer: CognitoJwtAuthorizer
+
+  MarkNotificationsReadFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-mark-notifications-read"
+      CodeUri: .
+      Handler: src/handlers/markNotificationsRead.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref NotificationsTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /users/me/notifications/read
+            Method: POST
+            Auth:
+              Authorizer: CognitoJwtAuthorizer
+
+  GetNewsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-get-news"
+      CodeUri: .
+      Handler: src/handlers/getNews.handler
+      Timeout: 25
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /news
+            Method: GET
+
+Outputs:
+  ApiUrl:
+    Description: HTTP API endpoint URL
+    Value: !Sub "https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com"
+    Export:
+      Name: !Sub "${AWS::StackName}-ApiUrl"
+
+  CloudFrontUrl:
+    Description: CloudFront distribution URL
+    Value: !Sub "https://${CloudFrontDistribution.DomainName}"
+    Export:
+      Name: !Sub "${AWS::StackName}-CloudFrontUrl"
+
+  CloudFrontDistributionId:
+    Description: CloudFront distribution ID (needed for cache invalidation)
+    Value: !Ref CloudFrontDistribution
+    Export:
+      Name: !Sub "${AWS::StackName}-CloudFrontDistributionId"
+
+  FrontendBucketName:
+    Description: S3 bucket name for frontend assets
+    Value: !Ref FrontendBucket
+    Export:
+      Name: !Sub "${AWS::StackName}-FrontendBucketName"
+
+  UserPoolId:
+    Description: Cognito User Pool ID
+    Value: !Ref UserPool
+    Export:
+      Name: !Sub "${AWS::StackName}-UserPoolId"
+
+  UserPoolClientId:
+    Description: Cognito User Pool Client ID
+    Value: !Ref UserPoolClient
+    Export:
+      Name: !Sub "${AWS::StackName}-UserPoolClientId"

@@ -1,0 +1,99 @@
+{
+  "nav": {
+    "home": "Home",
+    "login": "Log In",
+    "logout": "Log Out",
+    "signup": "Sign Up",
+    "profile": "View Profile"
+  },
+  "home": {
+    "title": "MangaCritic",
+    "subtitle": "The definitive guide to anime & manga reviews",
+    "empty": "No titles found.",
+    "filter": {
+      "all": "All",
+      "anime": "Anime",
+      "manga": "Manga",
+      "genre": "Genre",
+      "year": "Year"
+    }
+  },
+  "scores": {
+    "critic": "Critic",
+    "user": "Users",
+    "reviews": "reviews",
+    "na": "N/A",
+    "season": "Season",
+    "volume": "Volume",
+    "season_scores": "Season Scores",
+    "volume_scores": "Volume Scores"
+  },
+  "profile": {
+    "title": "My Profile",
+    "username": "Username",
+    "email": "Email",
+    "edit_username": "Edit username",
+    "save": "Save",
+    "saved": "Saved!",
+    "my_reviews": "My Reviews",
+    "no_reviews": "You haven't posted any reviews yet.",
+    "notifications": "Notifications",
+    "notifications_soon": "Reactions and notifications are coming soon."
+  },
+  "review": {
+    "submit": "Write a Review",
+    "score": "Your Score (0–100)",
+    "body": "Your Review",
+    "language": "Review Language",
+    "submit_btn": "Submit",
+    "cancel": "Cancel",
+    "translate": "Translate",
+    "translating": "Translating…",
+    "no_reviews": "No reviews yet — be the first!",
+    "critic_reviews": "Critic Reviews",
+    "user_reviews": "User Reviews",
+    "critic_label": "Critic",
+    "user_label": "User",
+    "edit": "Edit",
+    "delete": "Delete",
+    "confirm_delete": "Confirm delete",
+    "save_edit": "Save Changes",
+    "granularity": "Review covers",
+    "gran_series": "Full Series",
+    "gran_season": "Season",
+    "gran_episode": "Episode",
+    "gran_volume": "Volume",
+    "season_number": "Season #",
+    "episode_number": "Episode #",
+    "volume_number": "Volume #",
+    "gran_movie": "Movie"
+  },
+  "auth": {
+    "username": "Username",
+    "email": "Email",
+    "password": "Password",
+    "login": "Log In",
+    "signup": "Sign Up",
+    "confirm": "Confirm Account",
+    "confirm_code": "Verification Code",
+    "confirm_btn": "Confirm",
+    "have_account": "Already have an account?",
+    "no_account": "Don't have an account?",
+    "check_email": "Check your email for a verification code."
+  },
+  "comment": {
+    "placeholder": "Write a comment…",
+    "submit": "Post",
+    "login_to_comment": "Log in to leave a comment."
+  },
+  "notifications": {
+    "title": "Notifications",
+    "unread": "unread",
+    "empty": "No new notifications.",
+    "commented": "commented on your review"
+  },
+  "errors": {
+    "loading": "Failed to load. Please try again.",
+    "submit": "Failed to submit. Please try again."
+  }
+}
