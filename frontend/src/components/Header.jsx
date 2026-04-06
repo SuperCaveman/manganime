@@ -192,33 +192,42 @@ export default function Header() {
 
   return (
     <header className="bg-gray-900 border-b border-gray-800 sticky top-0 z-50">
-      <div className="container mx-auto px-4 max-w-7xl h-14 flex items-center gap-4">
-        <Link
-          to="/"
-          className="text-xl font-bold tracking-tight text-purple-400 hover:text-purple-300 transition-colors shrink-0"
-        >
-          MangaCritic
-        </Link>
+      <div className="container mx-auto px-4 max-w-7xl">
+        {/* Top row — logo + (desktop search) + actions */}
+        <div className="h-14 flex items-center gap-4">
+          <Link
+            to="/"
+            className="text-xl font-bold tracking-tight text-purple-400 hover:text-purple-300 transition-colors shrink-0"
+          >
+            MangaCritic
+          </Link>
 
-        <div className="flex-1 flex justify-center px-4">
-          <SearchBar />
+          {/* Search bar — hidden on mobile, shown sm+ */}
+          <div className="hidden sm:flex flex-1 justify-center px-4">
+            <SearchBar />
+          </div>
+
+          <div className="flex items-center gap-3 shrink-0 ml-auto sm:ml-0">
+            <LocaleToggle />
+            {user === undefined ? null : user ? (
+              <>
+                <NotificationBell user={user} />
+                <UserMenu user={user} onLogout={handleLogout} />
+              </>
+            ) : (
+              <Link
+                to="/login"
+                className="bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium px-4 py-1.5 rounded-lg transition-colors"
+              >
+                {t('nav.login')}
+              </Link>
+            )}
+          </div>
         </div>
 
-        <div className="flex items-center gap-3 shrink-0">
-          <LocaleToggle />
-          {user === undefined ? null : user ? (
-            <>
-              <NotificationBell user={user} />
-              <UserMenu user={user} onLogout={handleLogout} />
-            </>
-          ) : (
-            <Link
-              to="/login"
-              className="bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium px-4 py-1.5 rounded-lg transition-colors"
-            >
-              {t('nav.login')}
-            </Link>
-          )}
+        {/* Mobile-only search row — full width below the logo row */}
+        <div className="sm:hidden pb-3">
+          <SearchBar />
         </div>
       </div>
     </header>

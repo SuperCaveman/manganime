@@ -110,6 +110,7 @@ async function fetchJikanSchedule(monday) {
             weekStart:   weekStartStr,
             releaseId:   `anime-episode#${malId}`,
             type:        'anime-episode',
+            locale:      'en',
             releaseDate,
             titleEn:     item.title_english || item.title,
             titleJa:     item.title_japanese || '',
@@ -133,6 +134,28 @@ async function fetchJikanSchedule(monday) {
 
   console.log(`Jikan schedule (${weekStartStr}): ${results.length} shows`);
   return results;
+}
+
+// ── JA anime cover fetcher (Jikan /anime) ────────────────────────────────────
+// Looks up the Japanese title on Jikan and returns the first valid cover URL.
+// Uses a 500ms pre-request sleep to stay within Jikan rate limits when called
+// sequentially for many Syobocal entries.
+
+async function fetchCoverJa(titleJa) {
+  await sleep(500);
+  try {
+    const res = await fetch(
+      `https://api.jikan.moe/v4/anime?q=${encodeURIComponent(titleJa)}&limit=3`,
+      { signal: AbortSignal.timeout(8000) }
+    );
+    if (!res.ok) return '';
+    const json = await res.json();
+    for (const item of json.data || []) {
+      const url = item.images?.jpg?.large_image_url || item.images?.jpg?.image_url;
+      if (url && await isValidCoverUrl(url)) return url;
+    }
+  } catch {}
+  return '';
 }
 
 // ── Manga cover image fetcher ─────────────────────────────────────────────────
@@ -302,6 +325,7 @@ async function fetchSevenSeas(weekStartStr, weekEndStr) {
         weekStart:    weekStartStr,
         releaseId,
         type:         'manga-volume',
+        locale:       'en',
         releaseDate:  dateStr,
         titleEn,
         titleJa:      '',
@@ -316,6 +340,129 @@ async function fetchSevenSeas(weekStartStr, weekEndStr) {
     console.log(`Seven Seas (${weekStartStr}–${weekEndStr}): ${results.length} releases`);
   } catch (err) {
     console.error('Seven Seas scraper failed (skipping):', err.message);
+  }
+
+  return results;
+}
+
+// ── Syobocal RSS (JA anime schedule) ─────────────────────────────────────────
+// Returns items for the requested week using the public Syobocal RSS feed.
+// pubDate values are in JST (+09:00); we convert to JST date strings for
+// releaseDate and compare against the week's Mon–Sun window (also in JST).
+
+async function fetchSyobocalRSS(monday) {
+  const weekStartStr = toDateStr(monday);
+  const jstOffsetMs  = 9 * 60 * 60 * 1000;
+  const weekStartJST = new Date(monday.getTime() + jstOffsetMs).toISOString().slice(0, 10);
+  const weekEndJST   = new Date(addDays(monday, 6).getTime() + jstOffsetMs).toISOString().slice(0, 10);
+  const results      = [];
+
+  try {
+    const res = await fetch('https://cal.syoboi.jp/rss2.php', {
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; MangaCriticBot/1.0; +https://mangacritic.app)' },
+      signal: AbortSignal.timeout(10_000),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const xml = await res.text();
+
+    const itemRe = /<item>([\s\S]*?)<\/item>/gi;
+    let m;
+    while ((m = itemRe.exec(xml)) !== null) {
+      const block = m[1];
+
+      // Title (may be CDATA-wrapped)
+      const titleMatch = block.match(/<title><!\[CDATA\[([\s\S]*?)\]\]><\/title>/) ||
+                         block.match(/<title>([\s\S]*?)<\/title>/);
+      if (!titleMatch) continue;
+      let rawTitle = titleMatch[1].trim();
+      // Strip leading 【注】【新】 etc. markers, then strip trailing episode "  #12 「…」"
+      rawTitle = rawTitle.replace(/^【[^】]*】\s*/, '');
+      const titleJa = rawTitle.replace(/\s+#\d+.*$/, '').trim();
+      if (!titleJa) continue;
+
+      // Link → TID (anime series ID in Syobocal)
+      const linkMatch = block.match(/<link>([\s\S]*?)<\/link>/) ||
+                        block.match(/<link><!\[CDATA\[([\s\S]*?)\]\]><\/link>/);
+      const tidMatch  = linkMatch?.[1]?.match(/\/tid\/(\d+)/);
+      if (!tidMatch) continue;
+      const tid = tidMatch[1];
+
+      // pubDate → JST date string
+      const pubDateMatch = block.match(/<pubDate>([\s\S]*?)<\/pubDate>/);
+      if (!pubDateMatch) continue;
+      const pubDate = new Date(pubDateMatch[1].trim());
+      if (isNaN(pubDate.getTime())) continue;
+      const releaseDate = new Date(pubDate.getTime() + jstOffsetMs).toISOString().slice(0, 10);
+
+      if (releaseDate < weekStartJST || releaseDate > weekEndJST) continue;
+
+      const coverImageUrl = await fetchCoverJa(titleJa);
+
+      results.push({
+        weekStart:    weekStartStr,
+        releaseId:    `anime-episode-ja#${tid}`,
+        type:         'anime-episode',
+        locale:       'ja',
+        releaseDate,
+        titleEn:      titleJa, // no EN title from Syobocal; use JA as fallback
+        titleJa,
+        malId:        '',
+        coverImageUrl,
+        platform:     'しょぼいカレンダー',
+        ttl:          ttlFor(weekStartStr),
+      });
+    }
+
+    console.log(`Syobocal RSS (${weekStartStr}): ${results.length} shows`);
+  } catch (err) {
+    console.error('Syobocal RSS fetch failed (skipping):', err.message);
+  }
+
+  return results;
+}
+
+// ── Jikan popular manga (JA) ──────────────────────────────────────────────────
+// Uses the Jikan /manga endpoint to return popular currently-serializing manga.
+// Since Comic Natalie / publisher sites are not statically scrapable, this
+// shows a curated "reading now" list rather than literal release-week volumes.
+
+async function fetchJikanMangaJa(monday) {
+  const weekStartStr = toDateStr(monday);
+  const results = [];
+
+  try {
+    const res = await fetch(
+      'https://api.jikan.moe/v4/manga?order_by=members&sort=desc&status=publishing&type=manga&limit=25&sfw',
+      { signal: AbortSignal.timeout(10_000) }
+    );
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+
+    for (const item of json.data || []) {
+      const malId = String(item.mal_id);
+      const titleJa = item.title_japanese || item.title;
+      const coverImageUrl = item.images?.jpg?.large_image_url || item.images?.jpg?.image_url || '';
+      if (!coverImageUrl) continue;
+
+      results.push({
+        weekStart:    weekStartStr,
+        releaseId:    `manga-volume-ja#${malId}`,
+        type:         'manga-volume',
+        locale:       'ja',
+        releaseDate:  weekStartStr,
+        titleEn:      item.title_english || item.title,
+        titleJa,
+        malId,
+        publisher:    'マンガ',
+        coverImageUrl,
+        amazonSearchUrl: '',
+        ttl:          ttlFor(weekStartStr),
+      });
+    }
+
+    console.log(`Jikan manga JA (${weekStartStr}): ${results.length} items`);
+  } catch (err) {
+    console.error('Jikan manga JA fetch failed (skipping):', err.message);
   }
 
   return results;
@@ -390,6 +537,35 @@ exports.handler = async () => {
   // Note: Blu-ray/DVD sources (Crunchyroll Store, Funimation) are JS-rendered
   // React apps that cannot be scraped from Lambda. Skipping gracefully.
   console.log('Anime physical releases: skipped (JS-rendered sources require headless browser)');
+
+  // ── JA: Anime episodes (current week via Syobocal RSS) ───────────────────
+  console.log('Fetching Syobocal RSS — current week JA…');
+  try {
+    allItems.push(...await fetchSyobocalRSS(thisMonday));
+  } catch (err) {
+    console.error('Syobocal current week failed:', err.message);
+  }
+
+  // ── JA: Anime episodes (next week via Syobocal RSS) ──────────────────────
+  // The feed only covers the current broadcast week; next week returns 0 items.
+  console.log('Fetching Syobocal RSS — next week JA…');
+  try {
+    allItems.push(...await fetchSyobocalRSS(nextMonday));
+  } catch (err) {
+    console.error('Syobocal next week failed:', err.message);
+  }
+
+  // ── JA: Manga (popular serializing titles via Jikan, both weeks) ─────────
+  console.log('Fetching Jikan manga JA…');
+  try {
+    const jaManga = await fetchJikanMangaJa(thisMonday);
+    for (const item of jaManga) {
+      allItems.push(item); // current week
+      allItems.push({ ...item, weekStart: toDateStr(nextMonday) }); // next week
+    }
+  } catch (err) {
+    console.error('Jikan manga JA failed:', err.message);
+  }
 
   await batchWrite(allItems);
   console.log(`FetchReleaseCalendar complete — ${allItems.length} raw items`);

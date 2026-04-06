@@ -60,7 +60,12 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-gray-800 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-600">
-          <p>© {year} MangaCritic. {isJa ? '全著作権所有。' : 'All rights reserved.'}</p>
+          <div className="flex items-center gap-3">
+            <p>© {year} MangaCritic. {isJa ? '全著作権所有。' : 'All rights reserved.'}</p>
+            <Link to="/privacy" className="hover:text-gray-400 transition-colors">
+              {isJa ? 'プライバシーポリシー' : 'Privacy Policy'}
+            </Link>
+          </div>
           <div className="text-right space-y-1">
             <p>
               {isJa

@@ -33,9 +33,22 @@ Resources:
       AttributeDefinitions:
         - AttributeName: titleId
           AttributeType: S
+        - AttributeName: hasScores
+          AttributeType: S
+        - AttributeName: divergence
+          AttributeType: N
       KeySchema:
         - AttributeName: titleId
           KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: DivergenceIndex
+          KeySchema:
+            - AttributeName: hasScores
+              KeyType: HASH
+            - AttributeName: divergence
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
 
   ReviewsTable:
     Type: AWS::DynamoDB::Table

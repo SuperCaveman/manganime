@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Helmet } from 'react-helmet-async';
 import ScoreBadge from '../components/ScoreBadge';
 import ReviewCard from '../components/ReviewCard';
 import { titles as titlesApi } from '../api/client';
@@ -453,8 +454,30 @@ export default function TitleDetail() {
   const criticReviews = reviews.filter((r) => r.source === 'critic');
   const userReviews   = reviews.filter((r) => r.source === 'user');
 
+  const ogTitle = `${displayTitle} — MangaCritic`;
+  const ogDesc = [
+    title.criticScore != null ? `Critic Score: ${title.criticScore}` : null,
+    title.userScore   != null ? `Audience Score: ${title.userScore}` : null,
+    title.genres?.slice(0, 3).join(', ') || null,
+    title.year ? String(title.year) : null,
+  ].filter(Boolean).join(' · ');
+  const ogUrl = `https://d3ebxffhzw1f7f.cloudfront.net/title/${titleId}`;
+
   return (
     <div className="max-w-4xl mx-auto">
+      <Helmet>
+        <title>{ogTitle}</title>
+        <meta name="description" content={ogDesc} />
+        <meta property="og:title" content={ogTitle} />
+        <meta property="og:description" content={ogDesc} />
+        <meta property="og:url" content={ogUrl} />
+        <meta property="og:type" content="website" />
+        {title.coverImageUrl && <meta property="og:image" content={title.coverImageUrl} />}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={ogTitle} />
+        <meta name="twitter:description" content={ogDesc} />
+        {title.coverImageUrl && <meta name="twitter:image" content={title.coverImageUrl} />}
+      </Helmet>
 
       {/* ── Header ──────────────────────────────────────────────── */}
       <div className="flex gap-6 mb-8">

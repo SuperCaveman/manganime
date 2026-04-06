@@ -1,6 +1,6 @@
 'use strict';
 
-const { ScanCommand } = require('@aws-sdk/lib-dynamodb');
+const { ScanCommand, QueryCommand } = require('@aws-sdk/lib-dynamodb');
 const { ddb } = require('../utils/dynamodb');
 const { ok, serverError } = require('../utils/response');
 
@@ -11,9 +11,24 @@ exports.handler = async (event) => {
       genre,
       year,
       search,
+      divergent,
       limit = '20',
       nextToken,
     } = event.queryStringParameters || {};
+
+    // Divergence query — returns titles with both scores and |critic - user| >= 20
+    if (divergent) {
+      const pageLimit = Math.min(parseInt(limit, 10) || 6, 25);
+      const result = await ddb.send(new QueryCommand({
+        TableName: process.env.TITLES_TABLE,
+        IndexName: 'DivergenceIndex',
+        KeyConditionExpression: 'hasScores = :hs AND divergence >= :minDiv',
+        ExpressionAttributeValues: { ':hs': '1', ':minDiv': 20 },
+        ScanIndexForward: false,
+        Limit: pageLimit,
+      }));
+      return ok({ items: result.Items || [] });
+    }
 
     const pageLimit = Math.min(parseInt(limit, 10) || 20, 100);
 

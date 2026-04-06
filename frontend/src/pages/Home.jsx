@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Helmet } from 'react-helmet-async';
 import TitleListItem from '../components/TitleListItem';
 import ScoreBadge from '../components/ScoreBadge';
 import { titles as titlesApi, news as newsApi, releases as releasesApi } from '../api/client';
@@ -319,6 +320,7 @@ function MangaVolumeCard({ item, isJa, navigate, allTitles }) {
   const displayTitle = isJa && item.titleJa ? item.titleJa : item.titleEn;
   const [coverUrl, setCoverUrl] = useState(item.coverImageUrl || '');
   const [imgFailed, setImgFailed] = useState(false);
+  const [navigating, setNavigating] = useState(false);
   const matched = allTitles?.find((t) => t.titleEn?.toLowerCase() === item.titleEn?.toLowerCase());
   const showReviewBadge = !matched || (matched.reviewCount || 0) === 0;
 
@@ -331,8 +333,26 @@ function MangaVolumeCard({ item, isJa, navigate, allTitles }) {
     return () => { cancelled = true; };
   }, [item.titleEn, item.coverImageUrl]);
 
+  const handleClick = async () => {
+    if (navigating) return;
+    if (matched) { navigate(`/title/${matched.titleId}`); return; }
+    setNavigating(true);
+    try {
+      const titleType = item.type === 'manga-volume' ? 'manga' : 'anime';
+      const res = await titlesApi.create({
+        titleEn: item.titleEn,
+        titleJa: item.titleJa || '',
+        type: titleType,
+        malId: item.malId || '',
+        coverImageUrl: coverUrl || '',
+      });
+      navigate(`/title/${res.data.titleId}`);
+    } catch { /* ignore */ } finally {
+      setNavigating(false);
+    }
+  };
+
   const handleReviewClick = (e) => {
-    e.preventDefault();
     e.stopPropagation();
     if (matched) {
       navigate('/post', { state: { preselectedTitle: matched } });
@@ -348,11 +368,10 @@ function MangaVolumeCard({ item, isJa, navigate, allTitles }) {
   };
 
   return (
-    <a
-      href={item.amazonSearchUrl || '#'}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="w-36 shrink-0 bg-gray-900 rounded-xl overflow-hidden border border-gray-800 hover:border-purple-600 transition-colors group text-left block"
+    <button
+      onClick={handleClick}
+      disabled={navigating}
+      className="w-36 shrink-0 bg-gray-900 rounded-xl overflow-hidden border border-gray-800 hover:border-purple-600 transition-colors group text-left disabled:opacity-60"
     >
       <div className="aspect-[3/4] bg-gray-800 flex items-center justify-center overflow-hidden relative">
         {coverUrl && !imgFailed ? (
@@ -393,7 +412,7 @@ function MangaVolumeCard({ item, isJa, navigate, allTitles }) {
           </button>
         )}
       </div>
-    </a>
+    </button>
   );
 }
 
@@ -417,21 +436,22 @@ function ReleaseCalendarSection({ week, allTitles }) {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const isJa = i18n.language === 'ja';
+  const locale = isJa ? 'ja' : 'en';
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setLoading(true);
     releasesApi
-      .get(week)
+      .get(week, locale)
       .then((res) => setData(res.data))
       .catch(() => setData(null))
       .finally(() => setLoading(false));
-  }, [week]);
+  }, [week, locale]);
 
   const sectionTitle = week === 'current' ? t('calendar.this_week') : t('calendar.next_week');
 
-  const animeEpisodes = data?.animeEpisodes || [];
+  const animeEpisodes = (data?.animeEpisodes || []).filter((item) => locale === 'en' || item.coverImageUrl);
   const mangaFiltered = (data?.mangaVolumes || []).filter((item) => item.coverImageUrl);
   const mangaPublishers = [...new Set(mangaFiltered.map((i) => i.publisher).filter(Boolean))].join(' · ');
   const animePhysical = data?.animePhysical || [];
@@ -472,7 +492,9 @@ function ReleaseCalendarSection({ week, allTitles }) {
                   <AnimeEpisodeCard item={item} isJa={isJa} navigate={navigate} allTitles={allTitles} />
                 )}
               />
-              <p className="text-xs text-gray-400 mt-3 pt-2 border-t border-gray-800 text-right">Source: Crunchyroll · HiDive</p>
+              <p className="text-xs text-gray-400 mt-3 pt-2 border-t border-gray-800 text-right">
+                {locale === 'ja' ? 'Source: しょぼいカレンダー' : 'Source: Crunchyroll · HiDive'}
+              </p>
             </div>
           )}
           {mangaFiltered.length > 0 && (
@@ -485,7 +507,9 @@ function ReleaseCalendarSection({ week, allTitles }) {
                 )}
               />
               <p className="text-xs text-gray-400 mt-3 pt-2 border-t border-gray-800 text-right">
-                {mangaPublishers ? `Source: ${mangaPublishers}` : 'Source: Seven Seas · Viz · Yen Press · Kodansha'}
+                {locale === 'ja'
+                  ? 'Source: MyAnimeList via Jikan'
+                  : (mangaPublishers ? `Source: ${mangaPublishers}` : 'Source: Seven Seas · Viz · Yen Press · Kodansha')}
               </p>
             </div>
           )}
@@ -501,6 +525,110 @@ function ReleaseCalendarSection({ week, allTitles }) {
               <p className="text-xs text-gray-400 mt-3 pt-2 border-t border-gray-800 text-right">Source: Right Stuf · Funimation</p>
             </div>
           )}
+        </div>
+      )}
+    </section>
+  );
+}
+
+// ── Score Divergence ─────────────────────────────────────────────────────────
+
+function ScoreDivergenceSection() {
+  const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
+  const isJa = i18n.language === 'ja';
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    titlesApi.divergent()
+      .then((res) => setItems(res.data.items || []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (!loading && items.length === 0) return null;
+
+  return (
+    <section>
+      <div className="flex flex-col mb-4 border-b border-gray-800 pb-3">
+        <h2 className="text-lg font-bold tracking-wide text-white uppercase">
+          {isJa ? '批評家 vs 視聴者' : 'Critics vs Audience'}
+        </h2>
+        <p className="text-xs text-gray-500 mt-0.5">
+          {isJa ? '意見が分かれた作品' : 'Where critics and fans disagree'}
+        </p>
+      </div>
+
+      {loading ? (
+        <div className="flex gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="w-44 shrink-0 bg-gray-900 rounded-xl overflow-hidden border border-gray-800 animate-pulse">
+              <div className="aspect-[3/4] bg-gray-800" />
+              <div className="p-3 space-y-2">
+                <div className="h-3 bg-gray-800 rounded w-3/4" />
+                <div className="h-3 bg-gray-800 rounded w-1/2" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="overflow-x-auto scrollbar-hide">
+          <div className="flex gap-4 pb-2">
+            {items.map((title) => {
+              const displayTitle = isJa && title.titleJa ? title.titleJa : title.titleEn;
+              const diff = Math.abs((title.criticScore ?? 0) - (title.userScore ?? 0));
+              const criticsWon = title.criticScore > title.userScore;
+              return (
+                <button
+                  key={title.titleId}
+                  onClick={() => navigate(`/title/${title.titleId}`)}
+                  className="w-44 shrink-0 bg-gray-900 rounded-xl overflow-hidden border border-gray-800 hover:border-purple-600 transition-colors group text-left"
+                >
+                  <div className="relative aspect-[3/4] bg-gray-800 overflow-hidden">
+                    {title.coverImageUrl ? (
+                      <img
+                        src={title.coverImageUrl}
+                        alt={displayTitle}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-3xl text-gray-600">
+                        {title.type === 'anime' ? '🎬' : '📖'}
+                      </div>
+                    )}
+                    <span className={`absolute bottom-0 left-0 right-0 text-center text-[10px] font-bold py-1 ${
+                      criticsWon ? 'bg-blue-900/90 text-blue-200' : 'bg-orange-900/90 text-orange-200'
+                    }`}>
+                      {criticsWon
+                        ? (isJa ? '批評家が高評価' : 'Critics loved it')
+                        : (isJa ? '視聴者が高評価' : 'Audiences loved it')}
+                    </span>
+                  </div>
+                  <div className="p-3">
+                    <h3 className="text-xs font-semibold text-white truncate mb-2 group-hover:text-purple-300 transition-colors">
+                      {displayTitle}
+                    </h3>
+                    <div className="flex items-center gap-2">
+                      <div className="flex flex-col items-center gap-0.5">
+                        <ScoreBadge score={title.criticScore} />
+                        <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wide">
+                          {isJa ? '批評家' : 'C'}
+                        </span>
+                      </div>
+                      <div className="flex flex-col items-center gap-0.5">
+                        <ScoreBadge score={title.userScore} />
+                        <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wide">
+                          {isJa ? '視聴者' : 'A'}
+                        </span>
+                      </div>
+                      <span className="ml-auto text-xs font-bold text-gray-500">±{diff}</span>
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
         </div>
       )}
     </section>
@@ -639,6 +767,7 @@ function NinetiesSpotlight() {
 
 export default function Home() {
   const { t, i18n } = useTranslation();
+  const isJa = i18n.language === 'ja';
   const [allTitles, setAllTitles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -682,6 +811,26 @@ export default function Home() {
 
   return (
     <div className="space-y-10">
+      <Helmet>
+        <title>MangaCritic — Anime &amp; Manga Review Aggregator</title>
+        <meta name="description" content="Critic scores and audience scores for anime and manga in one place. Bilingual EN/JA." />
+        <meta property="og:title" content="MangaCritic — Anime & Manga Review Aggregator" />
+        <meta property="og:description" content="Critic scores and audience scores for anime and manga in one place. Bilingual EN/JA." />
+        <meta property="og:url" content="https://d3ebxffhzw1f7f.cloudfront.net" />
+        <meta name="twitter:card" content="summary_large_image" />
+      </Helmet>
+
+      {/* ── Hero ─────────────────────────────────────────────────── */}
+      <div className="text-center py-10 px-4">
+        <h1 className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight mb-3">
+          {isJa ? 'アニメ・漫画の評論を一箇所に' : 'Anime & Manga Reviews, All in One Place'}
+        </h1>
+        <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+          {isJa
+            ? '批評家スコアとユーザースコアを集約。英語・日本語に対応。'
+            : 'Aggregated critic scores and audience scores. Fully bilingual EN/JA.'}
+        </p>
+      </div>
 
       {/* ── Release Calendar: This Week ──────────────────────────── */}
       <ReleaseCalendarSection week="current" allTitles={allTitles} />
@@ -731,6 +880,9 @@ export default function Home() {
         </section>
 
       </div>
+
+      {/* ── Critics vs Audience ──────────────────────────────────── */}
+      <ScoreDivergenceSection />
 
       {/* ── Latest News ──────────────────────────────────────────── */}
       <section>

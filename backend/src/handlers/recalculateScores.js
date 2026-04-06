@@ -202,6 +202,15 @@ async function updateTitleScores(titleId, criticScore, userScore, userCount, cri
   if (userScore !== null)   { setExprs.push('userScore = :us');   vals[':us'] = userScore;   }
   else { removeExprs.push('userScore'); }
 
+  // DivergenceIndex fields — only set when both scores exist
+  if (criticScore !== null && userScore !== null) {
+    setExprs.push('hasScores = :hs', 'divergence = :div');
+    vals[':hs']  = '1';
+    vals[':div'] = Math.abs(criticScore - userScore);
+  } else {
+    removeExprs.push('hasScores', 'divergence');
+  }
+
   if (criticPublications?.length) {
     setExprs.push('criticPublications = :cp');
     vals[':cp'] = criticPublications;

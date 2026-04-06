@@ -15,6 +15,7 @@ api.interceptors.request.use((config) => {
 export const titles = {
   list: (params) => api.get('/titles', { params }),
   search: (q) => api.get('/titles', { params: { search: q, limit: 100 } }),
+  divergent: () => api.get('/titles', { params: { divergent: '1', limit: 6 } }),
   get: (titleId) => api.get(`/titles/${titleId}`),
   getSeasonScores: (titleId) => api.get(`/titles/${titleId}/season-scores`),
   getVolumeScores: (titleId) => api.get(`/titles/${titleId}/volume-scores`),
@@ -54,7 +55,7 @@ export const notifications = {
 };
 
 export const releases = {
-  get: (week) => api.get('/releases', { params: { week } }),
+  get: (week, locale = 'en') => api.get('/releases', { params: { week, locale } }),
 };
 
 export default api;

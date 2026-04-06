@@ -30,13 +30,20 @@ exports.handler = async (event) => {
 
   try {
     const week = event.queryStringParameters?.week || 'current';
+    const locale = event.queryStringParameters?.locale || 'en';
     const offsetWeeks = week === 'next' ? 1 : 0;
     const weekStart = toDateStr(getMondayUTC(offsetWeeks));
+
+    const filterExpr = locale === 'en'
+      ? '(#loc = :locale OR attribute_not_exists(#loc))'
+      : '#loc = :locale';
 
     const result = await ddb.send(new QueryCommand({
       TableName: TABLE,
       KeyConditionExpression: 'weekStart = :ws',
-      ExpressionAttributeValues: { ':ws': weekStart },
+      FilterExpression: filterExpr,
+      ExpressionAttributeNames: { '#loc': 'locale' },
+      ExpressionAttributeValues: { ':ws': weekStart, ':locale': locale },
     }));
 
     const items = result.Items || [];
