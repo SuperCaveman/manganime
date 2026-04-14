@@ -7,7 +7,7 @@ import { me as meApi, titles as titlesApi, reviews as reviewsApi } from '../api/
 
 function scoreColor(score) {
   if (score >= 86) return '#22C55E';
-  if (score >= 41) return '#FACC15';
+  if (score >= 40) return '#FACC15';
   return '#EF4444';
 }
 

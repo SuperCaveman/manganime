@@ -1,6 +1,6 @@
 function scoreStyle(score) {
   if (score == null) return { background: '#374151', color: '#9CA3AF' };
-  if (score >= 61)   return { background: '#22C55E', color: '#fff' };
+  if (score >= 86)   return { background: '#22C55E', color: '#fff' };
   if (score >= 40)   return { background: '#FACC15', color: '#111827' };
   return               { background: '#EF4444',  color: '#fff' };
 }

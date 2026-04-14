@@ -601,7 +601,7 @@ export default function TitleDetail() {
               />
               <span
                 className="font-bold text-xl w-10 text-right tabular-nums"
-                style={{ color: form.score >= 61 ? '#22C55E' : form.score >= 40 ? '#FACC15' : '#EF4444' }}
+                style={{ color: form.score >= 86 ? '#22C55E' : form.score >= 40 ? '#FACC15' : '#EF4444' }}
               >
                 {form.score}
               </span>

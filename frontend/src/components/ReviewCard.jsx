@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { reviews as reviewsApi, comments as commentsApi } from '../api/client';
 
 function scoreColor(score) {
-  if (score >= 61) return '#22C55E';
+  if (score >= 86) return '#22C55E';
   if (score >= 40) return '#FACC15';
   return '#EF4444';
 }
@@ -242,7 +242,7 @@ export default function ReviewCard({ review, titleId, currentUserId, currentUser
               />
               <span
                 className="text-lg font-bold w-10 text-right tabular-nums"
-                style={{ color: editScore >= 61 ? '#22C55E' : editScore >= 40 ? '#FACC15' : '#EF4444' }}
+                style={{ color: editScore >= 86 ? '#22C55E' : editScore >= 40 ? '#FACC15' : '#EF4444' }}
               >
                 {editScore}
               </span>
