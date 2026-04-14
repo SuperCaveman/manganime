@@ -871,7 +871,7 @@ export default function Home() {
         <p className="text-gray-400 text-lg max-w-2xl mx-auto">
           {isJa
             ? 'Proスコアとファンスコアを集約。英語・日本語に対応。'
-            : 'Aggregated Pro scores and Fan scores. Fully bilingual EN/JA.'}
+            : 'Aggregated Pro scores and Fan scores. Fully bilingual in English and Japanese.'}
         </p>
       </div>
 
