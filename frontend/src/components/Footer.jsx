@@ -73,6 +73,9 @@ export default function Footer() {
             <Link to="/privacy" className="hover:text-gray-400 transition-colors">
               {isJa ? 'プライバシーポリシー' : 'Privacy Policy'}
             </Link>
+            <Link to="/tos" className="hover:text-gray-400 transition-colors">
+              {isJa ? '利用規約' : 'Terms of Service'}
+            </Link>
           </div>
           <div className="text-right space-y-1">
             <p>
