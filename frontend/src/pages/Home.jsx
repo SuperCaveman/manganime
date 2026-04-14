@@ -868,7 +868,7 @@ export default function Home() {
         <h1 className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight mb-3">
           {isJa ? 'アニメ・漫画の評論を一箇所に' : 'Anime & Manga Reviews, All in One Place'}
         </h1>
-        <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+        <p className="text-gray-400 text-lg mx-auto whitespace-nowrap">
           {isJa
             ? 'Proスコアとファンスコアを集約。英語・日本語に対応。'
             : 'Aggregated Pro scores and Fan scores. Fully bilingual in English and Japanese.'}
