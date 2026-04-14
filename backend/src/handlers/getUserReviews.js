@@ -2,7 +2,7 @@
 
 const { QueryCommand } = require('@aws-sdk/lib-dynamodb');
 const { ddb } = require('../utils/dynamodb');
-const { ok, unauthorized, serverError } = require('../utils/response');
+const { ok, badRequest, unauthorized, serverError } = require('../utils/response');
 
 exports.handler = async (event) => {
   try {
@@ -21,9 +21,27 @@ exports.handler = async (event) => {
     };
 
     if (nextToken) {
-      params.ExclusiveStartKey = JSON.parse(
-        Buffer.from(nextToken, 'base64url').toString('utf-8')
-      );
+      let key;
+      try {
+        key = JSON.parse(Buffer.from(nextToken, 'base64url').toString('utf-8'));
+      } catch {
+        return badRequest('Invalid nextToken');
+      }
+      // UserIndex GSI key: userId (GSI hash) + createdAt (GSI range) + titleId + reviewId (table PK)
+      if (
+        typeof key !== 'object' || key === null ||
+        typeof key.userId !== 'string' ||
+        typeof key.titleId !== 'string' ||
+        typeof key.reviewId !== 'string'
+      ) {
+        return badRequest('Invalid nextToken');
+      }
+      params.ExclusiveStartKey = {
+        userId: key.userId,
+        titleId: key.titleId,
+        reviewId: key.reviewId,
+        ...(key.createdAt ? { createdAt: key.createdAt } : {}),
+      };
     }
 
     const result = await ddb.send(new QueryCommand(params));

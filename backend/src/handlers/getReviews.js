@@ -2,7 +2,7 @@
 
 const { QueryCommand } = require('@aws-sdk/lib-dynamodb');
 const { ddb } = require('../utils/dynamodb');
-const { ok, serverError } = require('../utils/response');
+const { ok, badRequest, serverError } = require('../utils/response');
 
 exports.handler = async (event) => {
   try {
@@ -28,9 +28,20 @@ exports.handler = async (event) => {
     }
 
     if (nextToken) {
-      params.ExclusiveStartKey = JSON.parse(
-        Buffer.from(nextToken, 'base64url').toString('utf-8')
-      );
+      let key;
+      try {
+        key = JSON.parse(Buffer.from(nextToken, 'base64url').toString('utf-8'));
+      } catch {
+        return badRequest('Invalid nextToken');
+      }
+      if (
+        typeof key !== 'object' || key === null ||
+        typeof key.titleId !== 'string' ||
+        typeof key.reviewId !== 'string'
+      ) {
+        return badRequest('Invalid nextToken');
+      }
+      params.ExclusiveStartKey = { titleId: key.titleId, reviewId: key.reviewId };
     }
 
     const result = await ddb.send(new QueryCommand(params));

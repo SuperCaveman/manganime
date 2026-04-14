@@ -46,7 +46,7 @@ function parseRSS2(xml) {
     const link = textTag(chunk, 'guid') || textTag(chunk, 'link');
     const title = textTag(chunk, 'title');
     const rawDesc = textTag(chunk, 'description');
-    const description = rawDesc.replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').slice(0, 200);
+    const description = rawDesc.replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').slice(0, 200);
     const pubDate = textTag(chunk, 'pubDate');
     if (title && link) items.push({ title, link, description, pubDate, thumbnail: '' });
   }
@@ -79,7 +79,23 @@ const OG_RE = [
   /content=["']([^"']+)["'][^>]*name=["']twitter:image["']/i,
 ];
 
+// Private/loopback IP ranges — block SSRF attempts
+const PRIVATE_IP_RE = /^(127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|::1$|fc00:|fd)/i;
+
+function isSafeUrl(rawUrl) {
+  try {
+    const u = new URL(rawUrl);
+    if (u.protocol !== 'https:') return false;
+    // Block if the hostname is an IP address in a private range
+    if (PRIVATE_IP_RE.test(u.hostname)) return false;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 async function fetchOgImage(url) {
+  if (!isSafeUrl(url)) return '';
   try {
     const res = await fetch(url, {
       headers: { 'User-Agent': 'MangaCritic/1.0 (news aggregator)' },

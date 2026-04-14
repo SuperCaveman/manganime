@@ -16,10 +16,13 @@ exports.handler = async (event) => {
 
     const { text, displayName } = body;
     if (!text?.trim()) return badRequest('text is required');
+    const trimmedText = text.trim();
+    if (trimmedText.length > 2000) return badRequest('text must be 2000 characters or fewer');
 
     const commentId = randomUUID();
     const createdAt = new Date().toISOString();
-    const authorName = displayName || 'User';
+    const rawName = String(displayName || 'User').replace(/<[^>]*>/g, '').trim().slice(0, 100);
+    const authorName = rawName || 'User';
 
     const comment = {
       reviewId,
@@ -27,7 +30,7 @@ exports.handler = async (event) => {
       titleId,
       authorUserId: userId,
       authorName,
-      text: text.trim(),
+      text: trimmedText,
       createdAt,
     };
 
@@ -51,7 +54,7 @@ exports.handler = async (event) => {
           fromUsername: authorName,
           reviewId,
           titleId,
-          preview: text.trim().slice(0, 120),
+          preview: trimmedText.slice(0, 120),
           read: false,
           createdAt,
         },

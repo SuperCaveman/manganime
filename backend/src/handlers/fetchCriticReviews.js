@@ -75,9 +75,9 @@ function normalizeScore(raw) {
   const mnum = s.match(/^(\d+(?:\.\d+)?)$/);
   if (mnum) {
     const n = parseFloat(mnum[1]);
-    if (n <= 5)   return Math.round(n * 20); // /5
-    if (n <= 10)  return Math.round(n * 10); // /10
-    if (n <= 100) return Math.round(n);      // /100
+    if (n <= 5)   return Math.min(100, Math.max(0, Math.round(n * 20))); // /5
+    if (n <= 10)  return Math.min(100, Math.max(0, Math.round(n * 10))); // /10
+    if (n <= 100) return Math.min(100, Math.max(0, Math.round(n)));      // /100
   }
 
   return null;

@@ -205,7 +205,7 @@ Resources:
           RequireUppercase: true
           RequireLowercase: true
           RequireNumbers: true
-          RequireSymbols: false
+          RequireSymbols: true
 
   UserPoolClient:
     Type: AWS::Cognito::UserPoolClient
@@ -218,6 +218,35 @@ Resources:
         - ALLOW_REFRESH_TOKEN_AUTH
 
   # ── S3 + CloudFront ────────────────────────────────────────────────────────
+
+  SecurityHeadersPolicy:
+    Type: AWS::CloudFront::ResponseHeadersPolicy
+    Properties:
+      ResponseHeadersPolicyConfig:
+        Name: !Sub "${AWS::StackName}-security-headers"
+        SecurityHeadersConfig:
+          ContentTypeOptions:
+            Override: true
+          FrameOptions:
+            FrameOption: DENY
+            Override: true
+          ReferrerPolicy:
+            ReferrerPolicy: strict-origin-when-cross-origin
+            Override: true
+          StrictTransportSecurity:
+            AccessControlMaxAgeSec: 63072000
+            IncludeSubdomains: true
+            Preload: true
+            Override: true
+          XSSProtection:
+            ModeBlock: true
+            Override: true
+            Protection: true
+        CustomHeadersConfig:
+          Items:
+            - Header: Permissions-Policy
+              Value: "camera=(), microphone=(), geolocation=()"
+              Override: true
 
   FrontendBucket:
     Type: AWS::S3::Bucket
@@ -258,6 +287,7 @@ Resources:
           ViewerProtocolPolicy: redirect-to-https
           # CachingOptimized managed policy
           CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
+          ResponseHeadersPolicyId: !Ref SecurityHeadersPolicy
         CustomErrorResponses:
           - ErrorCode: 403
             ResponseCode: 200
@@ -289,6 +319,9 @@ Resources:
   HttpApi:
     Type: AWS::Serverless::HttpApi
     Properties:
+      DefaultRouteSettings:
+        ThrottlingBurstLimit: 200
+        ThrottlingRateLimit: 100
       CorsConfiguration:
         AllowOrigins:
           - "https://d3ebxffhzw1f7f.cloudfront.net"

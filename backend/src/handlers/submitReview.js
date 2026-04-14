@@ -62,16 +62,25 @@ exports.handler = async (event) => {
 
     if (bodyEn)      review.bodyEn      = bodyEn;
     if (bodyJa)      review.bodyJa      = bodyJa;
-    if (displayName) review.displayName = displayName;
+    if (displayName) {
+      const clean = String(displayName).replace(/<[^>]*>/g, '').trim().slice(0, 100);
+      if (clean) review.displayName = clean;
+    }
 
     if (gran === 'season' || gran === 'episode') {
-      review.seasonNumber = Number(seasonNumber);
+      const sn = parseInt(seasonNumber, 10);
+      if (!Number.isInteger(sn) || sn < 1) return badRequest('seasonNumber must be a positive integer');
+      review.seasonNumber = sn;
     }
     if (gran === 'episode') {
-      review.episodeNumber = Number(episodeNumber);
+      const ep = parseInt(episodeNumber, 10);
+      if (!Number.isInteger(ep) || ep < 1) return badRequest('episodeNumber must be a positive integer');
+      review.episodeNumber = ep;
     }
     if (gran === 'volume') {
-      review.volumeNumber = Number(volumeNumber);
+      const vn = parseInt(volumeNumber, 10);
+      if (!Number.isInteger(vn) || vn < 1) return badRequest('volumeNumber must be a positive integer');
+      review.volumeNumber = vn;
     }
 
     await ddb.send(new PutCommand({ TableName: process.env.REVIEWS_TABLE, Item: review }));
