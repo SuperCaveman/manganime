@@ -55,8 +55,24 @@ function ListSkeleton({ rows = 4 }) {
 
 // ── Latest Trailers ───────────────────────────────────────────────────────────
 
-const TRAILER_CACHE_KEY = 'mc_featured_trailer';
+const TRAILER_CACHE_KEY = 'mc_featured_trailer_v2'; // v2 = tokusatsu filter added
 const TRAILER_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+
+// Titles containing these strings are tokusatsu / live-action and should be excluded
+const TOKUSATSU_BLOCKLIST = [
+  'kamen rider', 'sentai', 'ultraman', 'ttfc', 'super hero',
+  'masked rider', 'garo', 'tokkei winspector',
+];
+
+const ALLOWED_ANIME_TYPES = new Set(['TV', 'Movie', 'OVA', 'ONA']);
+
+function isBlockedTrailer(item) {
+  const title = (item.title || '').toLowerCase();
+  const titleEn = (item.title_english || '').toLowerCase();
+  if (TOKUSATSU_BLOCKLIST.some((kw) => title.includes(kw) || titleEn.includes(kw))) return true;
+  if (item.type && !ALLOWED_ANIME_TYPES.has(item.type)) return true;
+  return false;
+}
 
 function extractYoutubeId(trailer) {
   if (!trailer) return null;
@@ -84,13 +100,14 @@ function LatestTrailers() {
 
     async function load() {
       try {
-        // Walk pages until we find a result with a trailer embed
-        for (let page = 1; page <= 3; page++) {
+        // Walk pages until we find a result with a trailer embed that isn't tokusatsu/live-action
+        for (let page = 1; page <= 5; page++) {
           const res = await fetch(
-            `https://api.jikan.moe/v4/anime?status=airing&order_by=popularity&sort=desc&limit=10&sfw&page=${page}`
+            `https://api.jikan.moe/v4/anime?status=airing&order_by=popularity&sort=desc&limit=10&sfw=true&page=${page}`
           );
           const json = await res.json();
           for (const item of json.data || []) {
+            if (isBlockedTrailer(item)) continue;
             const youtubeId = extractYoutubeId(item.trailer);
             if (!youtubeId) continue;
             const found = {
@@ -595,10 +612,10 @@ function ScoreDivergenceSection() {
     <section>
       <div className="flex flex-col mb-4 border-b border-gray-800 pb-3">
         <h2 className="text-lg font-bold tracking-wide text-white uppercase">
-          {isJa ? '批評家 vs 視聴者' : 'Critics vs Audience'}
+          {isJa ? 'プロ vs ファン' : 'Pros vs Fans'}
         </h2>
         <p className="text-xs text-gray-500 mt-0.5">
-          {isJa ? '意見が分かれた作品' : 'Where critics and fans disagree'}
+          {isJa ? '意見が分かれた作品' : 'Where the pros and fans disagree'}
         </p>
       </div>
 
@@ -704,18 +721,31 @@ function NinetiesSpotlight() {
   const isJa = i18n.language === 'ja';
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [failed, setFailed] = useState(false);
   const [selecting, setSelecting] = useState(null);
 
   useEffect(() => {
-    const params = 'start_date=1990-01-01&end_date=1999-12-31&order_by=score&sort=desc&limit=3&sfw';
-    Promise.all([
-      fetch(`https://api.jikan.moe/v4/anime?${params}`)
-        .then((r) => r.json()).then((d) => (d.data || []).map((i) => mapJikan(i, 'anime'))).catch(() => []),
-      fetch(`https://api.jikan.moe/v4/manga?${params}`)
-        .then((r) => r.json()).then((d) => (d.data || []).map((i) => mapJikan(i, 'manga'))).catch(() => []),
-    ])
-      .then(([anime, manga]) => setItems([...anime, ...manga]))
-      .finally(() => setLoading(false));
+    // Delay to avoid competing with other Jikan requests fired at page load
+    const timer = setTimeout(async () => {
+      const params = 'start_date=1990-01-01&end_date=1999-12-31&order_by=score&sort=desc&limit=3&sfw=true';
+      try {
+        const [animeRes, mangaRes] = await Promise.all([
+          fetch(`https://api.jikan.moe/v4/anime?${params}`).then((r) => r.json()),
+          fetch(`https://api.jikan.moe/v4/manga?${params}`).then((r) => r.json()),
+        ]);
+        const anime = (animeRes.data || []).map((i) => mapJikan(i, 'anime'));
+        const manga = (mangaRes.data || []).map((i) => mapJikan(i, 'manga'));
+        const combined = [...anime, ...manga];
+        if (combined.length === 0) setFailed(true);
+        setItems(combined);
+      } catch (err) {
+        console.error('NinetiesSpotlight fetch failed:', err);
+        setFailed(true);
+      } finally {
+        setLoading(false);
+      }
+    }, 1500);
+    return () => clearTimeout(timer);
   }, []);
 
   const handleClick = async (jikanTitle) => {
@@ -739,6 +769,9 @@ function NinetiesSpotlight() {
       setSelecting(null);
     }
   };
+
+  // Don't render section at all if fetch failed and nothing loaded
+  if (!loading && failed && items.length === 0) return null;
 
   return (
     <section>

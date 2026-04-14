@@ -20,7 +20,7 @@ export default function Footer() {
             <p className="text-gray-500 text-sm mt-2 leading-relaxed">
               {isJa
                 ? 'アニメ・漫画の評論を集約したレビューサイト。批評家スコアとユーザースコアで作品を評価。'
-                : 'The definitive aggregator for anime & manga reviews. Critic scores and user scores in one place.'}
+                : 'The definitive aggregator for anime & manga reviews. Pro scores and Fan scores in one place.'}
             </p>
           </div>
 
