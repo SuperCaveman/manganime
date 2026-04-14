@@ -9,7 +9,7 @@
   },
   "home": {
     "title": "MangaCritic",
-    "subtitle": "アニメ・マンガレビューの決定版",
+    "subtitle": "Proスコアとファンスコアを集約。英語・日本語に対応。",
     "empty": "タイトルが見つかりません。",
     "nineties_title": "90年代スポットライト",
     "nineties_subtitle": "黄金時代の名作",
@@ -36,7 +36,7 @@
     "season_scores": "シーズン別スコア",
     "volume_scores": "巻別スコア",
     "critic_score": "批評家スコア",
-    "audience_score": "視聴者スコア",
+    "audience_score": "ファンスコア",
     "based_on": "{{count}}件のレビューに基づく",
     "not_rated": "未評価"
   },

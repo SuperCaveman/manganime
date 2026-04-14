@@ -456,8 +456,8 @@ export default function TitleDetail() {
 
   const ogTitle = `${displayTitle} — MangaCritic`;
   const ogDesc = [
-    title.criticScore != null ? `Critic Score: ${title.criticScore}` : null,
-    title.userScore   != null ? `Audience Score: ${title.userScore}` : null,
+    title.criticScore != null ? `Pro Score: ${title.criticScore}` : null,
+    title.userScore   != null ? `Fan Score: ${title.userScore}` : null,
     title.genres?.slice(0, 3).join(', ') || null,
     title.year ? String(title.year) : null,
   ].filter(Boolean).join(' · ');
@@ -480,8 +480,8 @@ export default function TitleDetail() {
       </Helmet>
 
       {/* ── Header ──────────────────────────────────────────────── */}
-      <div className="flex gap-6 mb-8">
-        <div className="w-36 md:w-44 shrink-0">
+      <div className="flex gap-4 sm:gap-6 mb-8">
+        <div className="w-28 sm:w-36 md:w-44 shrink-0">
           {title.coverImageUrl ? (
             <img src={title.coverImageUrl} alt={displayTitle} className="w-full rounded-xl shadow-xl" />
           ) : (
@@ -601,7 +601,7 @@ export default function TitleDetail() {
               />
               <span
                 className="font-bold text-xl w-10 text-right tabular-nums"
-                style={{ color: form.score >= 75 ? '#22C55E' : form.score >= 50 ? '#FACC15' : '#EF4444' }}
+                style={{ color: form.score >= 61 ? '#22C55E' : form.score >= 40 ? '#FACC15' : '#EF4444' }}
               >
                 {form.score}
               </span>

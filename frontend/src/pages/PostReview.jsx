@@ -8,8 +8,8 @@ import ScoreBadge from '../components/ScoreBadge';
 const GENRES = ['Action', 'Drama', 'Fantasy', 'Historical', 'Horror', 'Romance', 'Sci-Fi', 'Shounen', 'Slice of Life', 'Thriller'];
 
 function scoreColor(s) {
-  if (s >= 75) return '#22C55E';
-  if (s >= 50) return '#FACC15';
+  if (s >= 61) return '#22C55E';
+  if (s >= 40) return '#FACC15';
   return '#EF4444';
 }
 

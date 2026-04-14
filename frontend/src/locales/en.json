@@ -9,7 +9,7 @@
   },
   "home": {
     "title": "MangaCritic",
-    "subtitle": "The definitive guide to anime & manga reviews",
+    "subtitle": "Aggregated Pro scores and Fan scores. Fully bilingual EN/JA.",
     "empty": "No titles found.",
     "nineties_title": "90s Spotlight",
     "nineties_subtitle": "Classics from the golden era",
@@ -35,8 +35,8 @@
     "volume": "Volume",
     "season_scores": "Season Scores",
     "volume_scores": "Volume Scores",
-    "critic_score": "Critic Score",
-    "audience_score": "Audience Score",
+    "critic_score": "Pro Score",
+    "audience_score": "Fan Score",
     "based_on": "Based on {{count}} reviews",
     "not_rated": "Not yet rated"
   },

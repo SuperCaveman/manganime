@@ -9,6 +9,7 @@ import Login from './pages/Login';
 import PostReview from './pages/PostReview';
 import Profile from './pages/Profile';
 import Privacy from './pages/Privacy';
+import Contact from './pages/Contact';
 
 function Spinner() {
   return (
@@ -33,6 +34,7 @@ export default function App() {
               <Route path="/post" element={<PostReview />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/privacy" element={<Privacy />} />
+              <Route path="/contact" element={<Contact />} />
             </Routes>
           </Suspense>
         </main>

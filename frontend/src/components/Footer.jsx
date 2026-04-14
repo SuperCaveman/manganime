@@ -47,12 +47,20 @@ export default function Footer() {
                 <span className="text-gray-500">86–100 — {isJa ? '傑作' : 'Universal Acclaim'}</span>
               </li>
               <li className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full shrink-0" style={{ background: '#22C55E' }} />
+                <span className="text-gray-500">61–85 — {isJa ? '概ね好評' : 'Generally Favorable'}</span>
+              </li>
+              <li className="flex items-center gap-2">
                 <span className="w-3 h-3 rounded-full shrink-0" style={{ background: '#FACC15' }} />
-                <span className="text-gray-500">41–85 — {isJa ? '概ね好評' : 'Mixed or Average'}</span>
+                <span className="text-gray-500">40–60 — {isJa ? '普通' : 'Mixed or Average'}</span>
               </li>
               <li className="flex items-center gap-2">
                 <span className="w-3 h-3 rounded-full shrink-0" style={{ background: '#EF4444' }} />
-                <span className="text-gray-500">0–40 — {isJa ? '不評' : 'Overwhelming Dislike'}</span>
+                <span className="text-gray-500">20–39 — {isJa ? '概ね不評' : 'Generally Unfavorable'}</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full shrink-0" style={{ background: '#EF4444' }} />
+                <span className="text-gray-500">0–19 — {isJa ? '酷評' : 'Overwhelming Dislike'}</span>
               </li>
             </ul>
           </div>

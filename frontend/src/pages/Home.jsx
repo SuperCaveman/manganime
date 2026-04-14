@@ -183,7 +183,9 @@ function AnimeEpisodeCard({ item, isJa, navigate, allTitles }) {
   const { t } = useTranslation();
   const displayTitle = isJa && item.titleJa ? item.titleJa : item.titleEn;
   const matched = allTitles?.find((t) => t.malId === item.malId);
-  const showReviewBadge = !matched || (matched.reviewCount || 0) === 0;
+  const hasReviews = matched && (matched.reviewCount || 0) > 0;
+  const criticScore = matched?.criticScore ?? null;
+  const userScore   = matched?.userScore   ?? null;
 
   const findOrCreate = async () => {
     const res = await titlesApi.create({
@@ -253,7 +255,12 @@ function AnimeEpisodeCard({ item, isJa, navigate, allTitles }) {
             Streaming
           </span>
         )}
-        {showReviewBadge && (
+        {hasReviews ? (
+          <div className="mt-1.5 flex justify-center gap-2">
+            <ScoreBadge score={criticScore} nullLabel="NR" size="sm" label="Pros" />
+            <ScoreBadge score={userScore}   nullLabel="NR" size="sm" label="Fans" />
+          </div>
+        ) : (
           <button
             onClick={handleReviewClick}
             className="mt-1.5 w-full text-center text-xs py-0.5 bg-purple-700/80 hover:bg-purple-600 text-purple-100 rounded font-medium transition-colors"
@@ -322,7 +329,9 @@ function MangaVolumeCard({ item, isJa, navigate, allTitles }) {
   const [imgFailed, setImgFailed] = useState(false);
   const [navigating, setNavigating] = useState(false);
   const matched = allTitles?.find((t) => t.titleEn?.toLowerCase() === item.titleEn?.toLowerCase());
-  const showReviewBadge = !matched || (matched.reviewCount || 0) === 0;
+  const hasReviews = matched && (matched.reviewCount || 0) > 0;
+  const criticScore = matched?.criticScore ?? null;
+  const userScore   = matched?.userScore   ?? null;
 
   useEffect(() => {
     if (item.coverImageUrl) { setCoverUrl(item.coverImageUrl); return; }
@@ -403,7 +412,12 @@ function MangaVolumeCard({ item, isJa, navigate, allTitles }) {
         <p className="text-xs text-gray-600 mt-0.5">
           {new Date(item.releaseDate + 'T00:00:00Z').toLocaleDateString(isJa ? 'ja-JP' : 'en-US', { month: 'short', day: 'numeric' })}
         </p>
-        {showReviewBadge && (
+        {hasReviews ? (
+          <div className="mt-1.5 flex justify-center gap-2">
+            <ScoreBadge score={criticScore} nullLabel="NR" size="sm" label="Pros" />
+            <ScoreBadge score={userScore}   nullLabel="NR" size="sm" label="Fans" />
+          </div>
+        ) : (
           <button
             onClick={handleReviewClick}
             className="mt-1.5 w-full text-center text-xs py-0.5 bg-purple-700/80 hover:bg-purple-600 text-purple-100 rounded font-medium transition-colors"
@@ -432,7 +446,11 @@ function ReleaseRow({ label, items, renderCard }) {
   );
 }
 
-function ReleaseCalendarSection({ week, allTitles }) {
+function seriesKey(item) {
+  return item.malId || item.titleJa || item.titleEn;
+}
+
+function ReleaseCalendarSection({ week, allTitles, onAnimeLoaded, excludeAnime }) {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const isJa = i18n.language === 'ja';
@@ -444,18 +462,35 @@ function ReleaseCalendarSection({ week, allTitles }) {
     setLoading(true);
     releasesApi
       .get(week, locale)
-      .then((res) => setData(res.data))
+      .then((res) => {
+        setData(res.data);
+        if (onAnimeLoaded) {
+          const eps = (res.data?.animeEpisodes || []).filter((item) => locale === 'en' || item.coverImageUrl);
+          onAnimeLoaded(eps);
+        }
+      })
       .catch(() => setData(null))
       .finally(() => setLoading(false));
   }, [week, locale]);
 
   const sectionTitle = week === 'current' ? t('calendar.this_week') : t('calendar.next_week');
 
-  const animeEpisodes = (data?.animeEpisodes || []).filter((item) => locale === 'en' || item.coverImageUrl);
+  const rawAnime = (data?.animeEpisodes || []).filter((item) => locale === 'en' || item.coverImageUrl);
+
+  const animeEpisodes = excludeAnime
+    ? (() => {
+        const excludedKeys = new Set(excludeAnime.map(seriesKey));
+        return rawAnime.filter((item) => {
+          const isPremiere = item.episodeNumber === 1;
+          return isPremiere || !excludedKeys.has(seriesKey(item));
+        });
+      })()
+    : rawAnime;
+
   const mangaFiltered = (data?.mangaVolumes || []).filter((item) => item.coverImageUrl);
   const mangaPublishers = [...new Set(mangaFiltered.map((i) => i.publisher).filter(Boolean))].join(' · ');
   const animePhysical = data?.animePhysical || [];
-  const hasContent = animeEpisodes.length > 0 || mangaFiltered.length > 0;
+  const hasContent = animeEpisodes.length > 0 || mangaFiltered.length > 0 || !!excludeAnime;
 
   return (
     <section>
@@ -483,7 +518,7 @@ function ReleaseCalendarSection({ week, allTitles }) {
         <p className="text-gray-500 text-sm py-4">{t('calendar.empty')}</p>
       ) : (
         <div>
-          {animeEpisodes.length > 0 && (
+          {animeEpisodes.length > 0 ? (
             <div className="mb-5">
               <ReleaseRow
                 label={t('calendar.anime_episodes')}
@@ -496,7 +531,14 @@ function ReleaseCalendarSection({ week, allTitles }) {
                 {locale === 'ja' ? 'Source: しょぼいカレンダー' : 'Source: Crunchyroll · HiDive'}
               </p>
             </div>
-          )}
+          ) : excludeAnime ? (
+            <div className="mb-5">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-2">{t('calendar.anime_episodes')}</p>
+              <p className="text-gray-500 text-sm py-2">
+                {isJa ? '来週の新着シリーズはありません' : 'No new series premiering next week — check back soon'}
+              </p>
+            </div>
+          ) : null}
           {mangaFiltered.length > 0 && (
             <div className="mb-5">
               <ReleaseRow
@@ -602,7 +644,7 @@ function ScoreDivergenceSection() {
                     }`}>
                       {criticsWon
                         ? (isJa ? '批評家が高評価' : 'Critics loved it')
-                        : (isJa ? '視聴者が高評価' : 'Audiences loved it')}
+                        : (isJa ? '視聴者が高評価' : 'Fans loved it')}
                     </span>
                   </div>
                   <div className="p-3">
@@ -774,6 +816,7 @@ export default function Home() {
   const [newsItems, setNewsItems] = useState([]);
   const [newsLoading, setNewsLoading] = useState(true);
   const [newsSource, setNewsSource] = useState('');
+  const [currentWeekAnime, setCurrentWeekAnime] = useState([]);
 
   useEffect(() => {
     titlesApi
@@ -827,16 +870,16 @@ export default function Home() {
         </h1>
         <p className="text-gray-400 text-lg max-w-2xl mx-auto">
           {isJa
-            ? '批評家スコアとユーザースコアを集約。英語・日本語に対応。'
-            : 'Aggregated critic scores and audience scores. Fully bilingual EN/JA.'}
+            ? 'Proスコアとファンスコアを集約。英語・日本語に対応。'
+            : 'Aggregated Pro scores and Fan scores. Fully bilingual EN/JA.'}
         </p>
       </div>
 
       {/* ── Release Calendar: This Week ──────────────────────────── */}
-      <ReleaseCalendarSection week="current" allTitles={allTitles} />
+      <ReleaseCalendarSection week="current" allTitles={allTitles} onAnimeLoaded={setCurrentWeekAnime} />
 
       {/* ── Release Calendar: Next Week ──────────────────────────── */}
-      <ReleaseCalendarSection week="next" allTitles={allTitles} />
+      <ReleaseCalendarSection week="next" allTitles={allTitles} excludeAnime={currentWeekAnime} />
 
       {/* ── Anime | Manga side-by-side columns ───────────────────── */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
