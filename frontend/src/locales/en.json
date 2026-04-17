@@ -27,7 +27,7 @@
     }
   },
   "scores": {
-    "critic": "Critic",
+    "critic": "Pro",
     "user": "Users",
     "reviews": "reviews",
     "na": "N/A",
@@ -62,9 +62,9 @@
     "translate": "Translate",
     "translating": "Translating…",
     "no_reviews": "No reviews yet — be the first!",
-    "critic_reviews": "Critic Reviews",
-    "user_reviews": "User Reviews",
-    "critic_label": "Critic",
+    "critic_reviews": "Pro Reviews",
+    "user_reviews": "Fan Reviews",
+    "critic_label": "Pro",
     "user_label": "User",
     "edit": "Edit",
     "delete": "Delete",
@@ -110,7 +110,7 @@
     "page_title": "Post a Review",
     "page_subtitle": "Rate an existing title or add a new one to MangaCritic.",
     "read_full": "Read full review",
-    "critic_disclaimer": "Critic scores and excerpts are sourced from third-party publications. Click to read the full review."
+    "critic_disclaimer": "Pro scores and excerpts are sourced from third-party publications. Click to read the full review."
   },
   "auth": {
     "username": "Username",

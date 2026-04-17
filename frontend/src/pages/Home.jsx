@@ -660,7 +660,7 @@ function ScoreDivergenceSection() {
                       criticsWon ? 'bg-blue-900/90 text-blue-200' : 'bg-orange-900/90 text-orange-200'
                     }`}>
                       {criticsWon
-                        ? (isJa ? '批評家が高評価' : 'Critics loved it')
+                        ? (isJa ? 'プロが高評価' : 'Pros loved it')
                         : (isJa ? '視聴者が高評価' : 'Fans loved it')}
                     </span>
                   </div>
@@ -889,9 +889,9 @@ export default function Home() {
     <div className="space-y-10">
       <Helmet>
         <title>MangaCritic — Anime &amp; Manga Review Aggregator</title>
-        <meta name="description" content="Critic scores and audience scores for anime and manga in one place. Bilingual EN/JA." />
+        <meta name="description" content="Pro scores and Fan scores for anime and manga in one place. Bilingual EN/JA." />
         <meta property="og:title" content="MangaCritic — Anime & Manga Review Aggregator" />
-        <meta property="og:description" content="Critic scores and audience scores for anime and manga in one place. Bilingual EN/JA." />
+        <meta property="og:description" content="Pro scores and Fan scores for anime and manga in one place. Bilingual EN/JA." />
         <meta property="og:url" content="https://d3ebxffhzw1f7f.cloudfront.net" />
         <meta name="twitter:card" content="summary_large_image" />
       </Helmet>

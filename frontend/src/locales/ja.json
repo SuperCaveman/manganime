@@ -27,7 +27,7 @@
     }
   },
   "scores": {
-    "critic": "批評家",
+    "critic": "Pro",
     "user": "ユーザー",
     "reviews": "レビュー",
     "na": "N/A",
@@ -35,7 +35,7 @@
     "volume": "巻",
     "season_scores": "シーズン別スコア",
     "volume_scores": "巻別スコア",
-    "critic_score": "批評家スコア",
+    "critic_score": "Proスコア",
     "audience_score": "ファンスコア",
     "based_on": "{{count}}件のレビューに基づく",
     "not_rated": "未評価"
@@ -62,9 +62,9 @@
     "translate": "翻訳",
     "translating": "翻訳中…",
     "no_reviews": "まだレビューがありません。最初のレビュアーになりましょう！",
-    "critic_reviews": "批評家レビュー",
-    "user_reviews": "ユーザーレビュー",
-    "critic_label": "批評家",
+    "critic_reviews": "Proレビュー",
+    "user_reviews": "ファンレビュー",
+    "critic_label": "Pro",
     "user_label": "ユーザー",
     "edit": "編集",
     "delete": "削除",
@@ -110,7 +110,7 @@
     "page_title": "レビューを書く",
     "page_subtitle": "既存のタイトルを評価するか、MangaCriticに新しいタイトルを追加してください。",
     "read_full": "全文を読む",
-    "critic_disclaimer": "批評家スコアと抜粋はサードパーティの出版物から取得しています。全文を読むにはクリックしてください。"
+    "critic_disclaimer": "Proスコアと抜粋はサードパーティの出版物から取得しています。全文を読むにはクリックしてください。"
   },
   "auth": {
     "username": "ユーザー名",
