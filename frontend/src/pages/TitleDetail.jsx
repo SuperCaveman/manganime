@@ -454,14 +454,14 @@ export default function TitleDetail() {
   const criticReviews = reviews.filter((r) => r.source === 'critic');
   const userReviews   = reviews.filter((r) => r.source === 'user');
 
-  const ogTitle = `${displayTitle} — MangaCritic`;
+  const ogTitle = `${displayTitle} — Fantachi`;
   const ogDesc = [
     title.criticScore != null ? `Pro Score: ${title.criticScore}` : null,
     title.userScore   != null ? `Fan Score: ${title.userScore}` : null,
     title.genres?.slice(0, 3).join(', ') || null,
     title.year ? String(title.year) : null,
   ].filter(Boolean).join(' · ');
-  const ogUrl = `https://d3ebxffhzw1f7f.cloudfront.net/title/${titleId}`;
+  const ogUrl = `https://fantachi.com/title/${titleId}`;
 
   return (
     <div className="max-w-4xl mx-auto">

@@ -672,13 +672,13 @@ function ScoreDivergenceSection() {
                       <div className="flex flex-col items-center gap-0.5">
                         <ScoreBadge score={title.criticScore} />
                         <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wide">
-                          {isJa ? '批評家' : 'C'}
+                          {isJa ? 'Pro' : 'Pros'}
                         </span>
                       </div>
                       <div className="flex flex-col items-center gap-0.5">
                         <ScoreBadge score={title.userScore} />
                         <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wide">
-                          {isJa ? '視聴者' : 'A'}
+                          {isJa ? 'ファン' : 'Fans'}
                         </span>
                       </div>
                       <span className="ml-auto text-xs font-bold text-gray-500">±{diff}</span>
@@ -888,18 +888,18 @@ export default function Home() {
   return (
     <div className="space-y-10">
       <Helmet>
-        <title>MangaCritic — Anime &amp; Manga Review Aggregator</title>
+        <title>Fantachi — Anime &amp; Manga Review Aggregator</title>
         <meta name="description" content="Pro scores and Fan scores for anime and manga in one place. Bilingual EN/JA." />
-        <meta property="og:title" content="MangaCritic — Anime & Manga Review Aggregator" />
+        <meta property="og:title" content="Fantachi — Anime & Manga Review Aggregator" />
         <meta property="og:description" content="Pro scores and Fan scores for anime and manga in one place. Bilingual EN/JA." />
-        <meta property="og:url" content="https://d3ebxffhzw1f7f.cloudfront.net" />
+        <meta property="og:url" content="https://fantachi.com" />
         <meta name="twitter:card" content="summary_large_image" />
       </Helmet>
 
       {/* ── Hero ─────────────────────────────────────────────────── */}
       <div className="text-center py-10 px-4">
         <h1 className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight mb-3">
-          {isJa ? 'アニメ・漫画の評論を一箇所に' : 'Anime & Manga Reviews, All in One Place'}
+          Fantachi
         </h1>
         <p className="text-gray-400 text-lg mx-auto whitespace-nowrap">
           {isJa

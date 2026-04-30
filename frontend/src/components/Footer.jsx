@@ -15,11 +15,11 @@ export default function Footer() {
           {/* Brand */}
           <div>
             <Link to="/" className="text-lg font-bold text-purple-400 hover:text-purple-300 transition-colors">
-              MangaCritic
+              Fantachi
             </Link>
             <p className="text-gray-500 text-sm mt-2 leading-relaxed">
               {isJa
-                ? 'アニメ・漫画の評論を集約したレビューサイト。批評家スコアとユーザースコアで作品を評価。'
+                ? 'アニメ・マンガレビューの決定版。プロスコアとファンスコアを一か所に。'
                 : 'The definitive aggregator for anime & manga reviews. Pro scores and Fan scores in one place.'}
             </p>
           </div>
@@ -61,7 +61,7 @@ export default function Footer() {
 
         <div className="border-t border-gray-800 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-600">
           <div className="flex items-center gap-3">
-            <p>© {year} MangaCritic. {isJa ? '全著作権所有。' : 'All rights reserved.'}</p>
+            <p>© {year} Fantachi. {isJa ? '全著作権所有。' : 'All rights reserved.'}</p>
             <Link to="/privacy" className="hover:text-gray-400 transition-colors">
               {isJa ? 'プライバシーポリシー' : 'Privacy Policy'}
             </Link>

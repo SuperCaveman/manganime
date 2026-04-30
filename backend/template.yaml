@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: MangaCritic — bilingual anime/manga review aggregation
+Description: Fantachi — bilingual anime/manga review aggregation
 
 Globals:
   Function:
@@ -20,6 +20,7 @@ Globals:
         NOTIFICATIONS_TABLE: !Ref NotificationsTable
         RELEASE_CALENDAR_TABLE: !Ref ReleaseCalendarTable
         AFFILIATE_TAG: "thunderwolfdr-20"
+        CONTACT_EMAIL: "{{resolve:ssm:fantachi-contact-email}}"
 
 Resources:
 
@@ -324,6 +325,8 @@ Resources:
         ThrottlingRateLimit: 100
       CorsConfiguration:
         AllowOrigins:
+          - "https://fantachi.com"
+          - "https://www.fantachi.com"
           - "https://d3ebxffhzw1f7f.cloudfront.net"
         AllowHeaders:
           - Content-Type
@@ -760,6 +763,27 @@ Resources:
             Name: !Sub "${AWS::StackName}-release-calendar-weekly"
             Description: Fetch anime/manga release data every Monday at 6am UTC
             Enabled: true
+
+  PostContactFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-post-contact"
+      CodeUri: .
+      Handler: src/handlers/postContact.handler
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - ses:SendEmail
+                - ses:SendRawEmail
+              Resource: !Sub "arn:aws:ses:${AWS::Region}:${AWS::AccountId}:identity/*"
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /contact
+            Method: post
 
 Outputs:
   ApiUrl:
