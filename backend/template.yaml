@@ -327,7 +327,6 @@ Resources:
         AllowOrigins:
           - "https://fantachi.com"
           - "https://www.fantachi.com"
-          - "https://d3ebxffhzw1f7f.cloudfront.net"
         AllowHeaders:
           - Content-Type
           - Authorization

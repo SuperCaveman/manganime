@@ -22,6 +22,9 @@ exports.handler = async (event) => {
     };
 
     if (source) {
+      if (!['user', 'critic', 'critic-external'].includes(source)) {
+        return badRequest('Invalid source');
+      }
       params.FilterExpression = '#src = :src';
       params.ExpressionAttributeNames = { '#src': 'source' };
       params.ExpressionAttributeValues[':src'] = source;

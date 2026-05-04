@@ -9,7 +9,7 @@ export default function Tos() {
   return (
     <div className="max-w-3xl mx-auto py-4">
       <Helmet>
-        <title>{isJa ? '利用規約 — MangaCritic' : 'Terms of Service — MangaCritic'}</title>
+        <title>{isJa ? '利用規約 — Fantachi' : 'Terms of Service — Fantachi'}</title>
       </Helmet>
 
       <Link to="/" className="text-sm text-purple-400 hover:text-purple-300 transition-colors">
@@ -31,8 +31,8 @@ export default function Tos() {
           </h2>
           <p className="text-sm text-gray-400">
             {isJa
-              ? 'MangaCritic（以下「当サービス」）をご利用いただくことにより、本利用規約に同意したものとみなします。本規約に同意されない場合は、当サービスのご利用をお控えください。'
-              : 'By accessing or using MangaCritic (the "Service"), you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use the Service.'}
+              ? 'Fantachi（以下「当サービス」）をご利用いただくことにより、本利用規約に同意したものとみなします。本規約に同意されない場合は、当サービスのご利用をお控えください。'
+              : 'By accessing or using Fantachi (the "Service"), you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use the Service.'}
           </p>
         </section>
 
@@ -75,13 +75,13 @@ export default function Tos() {
           </h2>
           <p className="text-sm text-gray-400 mb-2">
             {isJa
-              ? 'レビューやコメントを投稿することにより、MangaCriticに対して、当サービス上でそのコンテンツを表示・配布するための非独占的、無償、全世界的なライセンスを付与するものとします。'
-              : 'By submitting reviews or comments, you grant MangaCritic a non-exclusive, royalty-free, worldwide license to display and distribute that content on the Service.'}
+              ? 'レビューやコメントを投稿することにより、Fantachiに対して、当サービス上でそのコンテンツを表示・配布するための非独占的、無償、全世界的なライセンスを付与するものとします。'
+              : 'By submitting reviews or comments, you grant Fantachi a non-exclusive, royalty-free, worldwide license to display and distribute that content on the Service.'}
           </p>
           <p className="text-sm text-gray-400">
             {isJa
-              ? '投稿するコンテンツが他者の著作権を侵害しておらず、有害な素材を含まないことを保証する責任はお客様にあります。MangaCriticは投稿されたコンテンツについて一切の責任を負いません。'
-              : 'You are solely responsible for ensuring that content you submit does not infringe third-party copyrights or contain harmful material. MangaCritic assumes no liability for user-submitted content.'}
+              ? '投稿するコンテンツが他者の著作権を侵害しておらず、有害な素材を含まないことを保証する責任はお客様にあります。Fantachiは投稿されたコンテンツについて一切の責任を負いません。'
+              : 'You are solely responsible for ensuring that content you submit does not infringe third-party copyrights or contain harmful material. Fantachi assumes no liability for user-submitted content.'}
           </p>
         </section>
 
@@ -104,8 +104,8 @@ export default function Tos() {
           </ul>
           <p className="text-sm mt-3 text-gray-400">
             {isJa
-              ? 'MangaCriticは、本規約に違反するコンテンツを予告なく削除し、違反したアカウントを停止または終了する権利を留保します。'
-              : 'MangaCritic reserves the right to remove content that violates these terms and to suspend or terminate accounts of users who violate them, without prior notice.'}
+              ? 'Fantachiは、本規約に違反するコンテンツを予告なく削除し、違反したアカウントを停止または終了する権利を留保します。'
+              : 'Fantachi reserves the right to remove content that violates these terms and to suspend or terminate accounts of users who violate them, without prior notice.'}
           </p>
         </section>
 
@@ -115,8 +115,8 @@ export default function Tos() {
           </h2>
           <p className="text-sm text-gray-400">
             {isJa
-              ? 'MangaCriticはAmazonアソシエイト・プログラムの参加者です。amazon.comへのリンクを経由して購入が行われた場合、MangaCriticはアフィリエイト手数料を受け取ることがあります（アフィリエイトタグ：thunderwolfdr-20）。これによりお客様への追加費用は一切発生しません。'
-              : 'MangaCritic participates in the Amazon Associates Program. When a purchase is made through links to amazon.com on this site, MangaCritic may earn an affiliate commission (affiliate tag: thunderwolfdr-20). This comes at no additional cost to you.'}
+              ? 'FantachiはAmazonアソシエイト・プログラムの参加者です。amazon.comへのリンクを経由して購入が行われた場合、Fantachiはアフィリエイト手数料を受け取ることがあります（アフィリエイトタグ：thunderwolfdr-20）。これによりお客様への追加費用は一切発生しません。'
+              : 'Fantachi participates in the Amazon Associates Program. When a purchase is made through links to amazon.com on this site, Fantachi may earn an affiliate commission (affiliate tag: thunderwolfdr-20). This comes at no additional cost to you.'}
           </p>
         </section>
 
@@ -126,8 +126,8 @@ export default function Tos() {
           </h2>
           <p className="text-sm text-gray-400">
             {isJa
-              ? 'MangaCriticに表示されるスコアおよびデータは、Anime News Network、Jikan/MyAnimeList、AniList、IGN、Otaku USA、ComicBookRoundup、Polygon、The A.V. Clubなどの第三者ソースから出典付きで集約されたものです。MangaCriticは第三者コンテンツの正確性、完全性、または適法性について責任を負いません。各ソースはそれぞれ独自の利用規約を有します。'
-              : 'Scores and data displayed on MangaCritic are aggregated from third-party sources including Anime News Network, Jikan/MyAnimeList, AniList, IGN, Otaku USA, ComicBookRoundup, Polygon, and The A.V. Club, with attribution provided. MangaCritic is not responsible for the accuracy, completeness, or legality of third-party content. Each source is subject to its own terms of service.'}
+              ? 'Fantachiに表示されるスコアおよびデータは、Anime News Network、Jikan/MyAnimeList、AniList、IGN、Otaku USA、ComicBookRoundup、Polygon、The A.V. Clubなどの第三者ソースから出典付きで集約されたものです。Fantachiは第三者コンテンツの正確性、完全性、または適法性について責任を負いません。各ソースはそれぞれ独自の利用規約を有します。'
+              : 'Scores and data displayed on Fantachi are aggregated from third-party sources including Anime News Network, Jikan/MyAnimeList, AniList, IGN, Otaku USA, ComicBookRoundup, Polygon, and The A.V. Club, with attribution provided. Fantachi is not responsible for the accuracy, completeness, or legality of third-party content. Each source is subject to its own terms of service.'}
           </p>
         </section>
 
@@ -137,8 +137,8 @@ export default function Tos() {
           </h2>
           <p className="text-sm text-gray-400">
             {isJa
-              ? 'MangaCriticに掲載されているスコアおよびレビューはすべて意見であり、事実の陳述ではありません。MangaCriticは、スコア、レビュー、またはその他のコンテンツの正確性、信頼性、または完全性について、明示的または黙示的を問わず、いかなる保証も行いません。当サービスは現状有姿で提供されます。'
-              : 'All scores and reviews on MangaCritic represent opinions, not statements of fact. MangaCritic makes no warranties, express or implied, regarding the accuracy, reliability, or completeness of any scores, reviews, or other content. The Service is provided "as is."'}
+              ? 'Fantachiに掲載されているスコアおよびレビューはすべて意見であり、事実の陳述ではありません。Fantachiは、スコア、レビュー、またはその他のコンテンツの正確性、信頼性、または完全性について、明示的または黙示的を問わず、いかなる保証も行いません。当サービスは現状有姿で提供されます。'
+              : 'All scores and reviews on Fantachi represent opinions, not statements of fact. Fantachi makes no warranties, express or implied, regarding the accuracy, reliability, or completeness of any scores, reviews, or other content. The Service is provided "as is."'}
           </p>
         </section>
 
@@ -148,8 +148,8 @@ export default function Tos() {
           </h2>
           <p className="text-sm text-gray-400">
             {isJa
-              ? 'MangaCriticは、本利用規約をいつでも更新する権利を留保します。変更があった場合は、本ページ上部の「最終更新日」を更新します。変更後も当サービスを継続してご利用いただいた場合、改定された規約に同意したものとみなします。重要な変更については、可能な限り事前にお知らせするよう努めます。'
-              : 'MangaCritic reserves the right to update these Terms of Service at any time. When changes are made, the "Last updated" date at the top of this page will be revised. Your continued use of the Service after changes take effect constitutes acceptance of the revised terms. We will endeavor to provide advance notice of material changes where possible.'}
+              ? 'Fantachiは、本利用規約をいつでも更新する権利を留保します。変更があった場合は、本ページ上部の「最終更新日」を更新します。変更後も当サービスを継続してご利用いただいた場合、改定された規約に同意したものとみなします。重要な変更については、可能な限り事前にお知らせするよう努めます。'
+              : 'Fantachi reserves the right to update these Terms of Service at any time. When changes are made, the "Last updated" date at the top of this page will be revised. Your continued use of the Service after changes take effect constitutes acceptance of the revised terms. We will endeavor to provide advance notice of material changes where possible.'}
           </p>
         </section>
 

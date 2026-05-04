@@ -22,6 +22,8 @@ exports.handler = async (event) => {
     await ddb.send(new DeleteCommand({
       TableName: process.env.REVIEWS_TABLE,
       Key: { titleId, reviewId },
+      ConditionExpression: 'userId = :uid',
+      ExpressionAttributeValues: { ':uid': userId },
     }));
 
     await recalculate(titleId);

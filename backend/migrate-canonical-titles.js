@@ -10,7 +10,7 @@
  *   and malId is written back to DynamoDB for future use.
  *
  * Usage:
- *   STACK_NAME=mangacritic AWS_REGION=us-east-1 node migrate-canonical-titles.js
+ *   STACK_NAME=fantachi AWS_REGION=us-east-1 node migrate-canonical-titles.js
  *
  * Jikan rate limit: 3 req/sec — we wait 400 ms between requests to stay safe.
  */
@@ -18,7 +18,7 @@
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
 const { DynamoDBDocumentClient, ScanCommand, UpdateCommand } = require('@aws-sdk/lib-dynamodb');
 
-const STACK_NAME = process.env.STACK_NAME || 'mangacritic';
+const STACK_NAME = process.env.STACK_NAME || 'fantachi';
 const REGION     = process.env.AWS_REGION  || 'us-east-1';
 const TABLE      = `${STACK_NAME}-titles`;
 

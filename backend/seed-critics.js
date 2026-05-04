@@ -9,7 +9,7 @@
  * the "Critics vs Audience" homepage section.
  *
  * Usage:
- *   STACK_NAME=mangacritic AWS_REGION=us-east-1 node seed-critics.js
+ *   STACK_NAME=fantachi AWS_REGION=us-east-1 node seed-critics.js
  */
 
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
@@ -18,7 +18,7 @@ const {
 } = require('@aws-sdk/lib-dynamodb');
 const { randomUUID } = require('crypto');
 
-const STACK_NAME   = process.env.STACK_NAME || 'mangacritic';
+const STACK_NAME   = process.env.STACK_NAME || 'fantachi';
 const REGION       = process.env.AWS_REGION  || 'us-east-1';
 const TITLES_TABLE  = `${STACK_NAME}-titles`;
 const REVIEWS_TABLE = `${STACK_NAME}-reviews`;

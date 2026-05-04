@@ -14,7 +14,7 @@ const ddb = DynamoDBDocumentClient.from(client, {
   marshallOptions: { removeUndefinedValues: true },
 });
 
-const TABLE = 'mangacritic-titles';
+const TABLE = 'fantachi-titles';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // ── Titles to seed (MAL IDs hardcoded for accuracy) ──────────────────────────
@@ -83,7 +83,7 @@ async function fetchJikan(malId, type) {
     ? `https://api.jikan.moe/v4/anime/${malId}`
     : `https://api.jikan.moe/v4/manga/${malId}`;
   const res = await fetch(endpoint, {
-    headers: { 'User-Agent': 'MangaCritic/1.0 (seed script)' },
+    headers: { 'User-Agent': 'Fantachi/1.0 (seed script)' },
     signal: AbortSignal.timeout(10000),
   });
   if (!res.ok) throw new Error(`Jikan ${res.status} for ${type} ${malId}`);

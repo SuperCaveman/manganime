@@ -15,7 +15,7 @@ const ddb = DynamoDBDocumentClient.from(new DynamoDBClient({ region: 'us-east-1'
   marshallOptions: { removeUndefinedValues: true },
 });
 
-const REVIEWS_TABLE = 'mangacritic-reviews';
+const REVIEWS_TABLE = 'fantachi-reviews';
 
 function rid(url) {
   return 'ext-' + createHash('md5').update(url).digest('hex').slice(0, 16);
@@ -278,7 +278,7 @@ async function main() {
   const titleIds = [...new Set(REVIEWS.map(r => r.titleId))];
   const existing = new Set();
   for (const id of titleIds) {
-    const res = await ddb.send(new GetCommand({ TableName: 'mangacritic-titles', Key: { titleId: id } }));
+    const res = await ddb.send(new GetCommand({ TableName: 'fantachi-titles', Key: { titleId: id } }));
     if (res.Item) existing.add(id);
     else console.warn(`WARNING: titleId "${id}" not found in Titles table — its reviews will be skipped`);
   }

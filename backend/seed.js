@@ -9,7 +9,7 @@
  * record always stays consistent with the review data.
  *
  * Usage:
- *   STACK_NAME=mangacritic AWS_REGION=us-east-1 node seed.js
+ *   STACK_NAME=fantachi AWS_REGION=us-east-1 node seed.js
  */
 
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
@@ -47,7 +47,7 @@ async function fetchCover(titleEn, type) {
 
 // ── Config ───────────────────────────────────────────────────────────────────
 
-const STACK_NAME = process.env.STACK_NAME || 'mangacritic';
+const STACK_NAME = process.env.STACK_NAME || 'fantachi';
 const REGION     = process.env.AWS_REGION  || 'us-east-1';
 
 const TITLES_TABLE  = `${STACK_NAME}-titles`;

@@ -13,7 +13,7 @@ const ddb = DynamoDBDocumentClient.from(client, {
   marshallOptions: { removeUndefinedValues: true },
 });
 
-const TABLE = 'mangacritic-titles';
+const TABLE = 'fantachi-titles';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const TITLES = [
@@ -58,7 +58,7 @@ async function fetchJikan(malId, type) {
     ? `https://api.jikan.moe/v4/anime/${malId}`
     : `https://api.jikan.moe/v4/manga/${malId}`;
   const res = await fetch(url, {
-    headers: { 'User-Agent': 'MangaCritic/1.0 (seed script)' },
+    headers: { 'User-Agent': 'Fantachi/1.0 (seed script)' },
     signal: AbortSignal.timeout(12000),
   });
   if (res.status === 429) throw new Error('429 rate limited');

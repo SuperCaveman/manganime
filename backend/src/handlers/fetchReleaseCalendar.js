@@ -254,7 +254,7 @@ async function fetchSevenSeas(weekStartStr, weekEndStr) {
   try {
     const res = await fetch('https://sevenseasentertainment.com/release-dates/', {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; MangaCriticBot/1.0; +https://mangacritic.app)',
+        'User-Agent': 'Mozilla/5.0 (compatible; FantachiBot/1.0; +https://fantachi.app)',
         'Accept': 'text/html,application/xhtml+xml',
       },
       signal: AbortSignal.timeout(10_000),
@@ -359,7 +359,7 @@ async function fetchSyobocalRSS(monday) {
 
   try {
     const res = await fetch('https://cal.syoboi.jp/rss2.php', {
-      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; MangaCriticBot/1.0; +https://mangacritic.app)' },
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; FantachiBot/1.0; +https://fantachi.app)' },
       signal: AbortSignal.timeout(10_000),
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);

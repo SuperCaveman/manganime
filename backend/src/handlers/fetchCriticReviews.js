@@ -205,7 +205,7 @@ function matchTitle(query, allTitles) {
 
 // ── HTTP fetch helper ──────────────────────────────────────────────────────────
 
-const BOT_UA = 'MangaCriticBot/1.0 (review aggregator; scores and short excerpts only; +https://mangacritic.com)';
+const BOT_UA = 'FantachiBot/1.0 (review aggregator; scores and short excerpts only; +https://fantachi.com)';
 
 async function fetchText(url, timeout = 10000) {
   const r = await fetch(url, {

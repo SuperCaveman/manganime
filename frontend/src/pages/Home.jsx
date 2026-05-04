@@ -55,7 +55,7 @@ function ListSkeleton({ rows = 4 }) {
 
 // ── Latest Trailers ───────────────────────────────────────────────────────────
 
-const TRAILER_CACHE_KEY = 'mc_featured_trailer_v2'; // v2 = tokusatsu filter added
+const TRAILER_CACHE_KEY = 'mc_featured_trailer_v3';
 const TRAILER_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
 
 // Titles containing these strings are tokusatsu / live-action and should be excluded
@@ -894,6 +894,18 @@ export default function Home() {
         <meta property="og:description" content="Pro scores and Fan scores for anime and manga in one place. Bilingual EN/JA." />
         <meta property="og:url" content="https://fantachi.com" />
         <meta name="twitter:card" content="summary_large_image" />
+        <script type="application/ld+json">{JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'WebSite',
+          name: 'Fantachi',
+          url: 'https://fantachi.com',
+          description: 'Pro scores and Fan scores for anime and manga. Fully bilingual EN/JA.',
+          potentialAction: {
+            '@type': 'SearchAction',
+            target: { '@type': 'EntryPoint', urlTemplate: 'https://fantachi.com/?q={search_term_string}' },
+            'query-input': 'required name=search_term_string',
+          },
+        })}</script>
       </Helmet>
 
       {/* ── Hero ─────────────────────────────────────────────────── */}
@@ -901,7 +913,7 @@ export default function Home() {
         <h1 className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight mb-3">
           Fantachi
         </h1>
-        <p className="text-gray-400 text-lg mx-auto whitespace-nowrap">
+        <p className="text-gray-400 text-lg mx-auto max-w-prose break-words">
           {isJa
             ? 'Proスコアとファンスコアを集約。英語・日本語に対応。'
             : 'Aggregated Pro scores and Fan scores. Fully bilingual in English and Japanese.'}

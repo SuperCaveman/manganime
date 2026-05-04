@@ -30,6 +30,9 @@ exports.handler = async (event) => {
     if (!bodyEn && !bodyJa) {
       return badRequest('At least one of bodyEn or bodyJa is required');
     }
+    const MAX_BODY = 5000;
+    if (bodyEn && bodyEn.length > MAX_BODY) return badRequest(`bodyEn must be ${MAX_BODY} characters or fewer`);
+    if (bodyJa && bodyJa.length > MAX_BODY) return badRequest(`bodyJa must be ${MAX_BODY} characters or fewer`);
     if (!['en', 'ja'].includes(language)) {
       return badRequest('language must be "en" or "ja"');
     }
@@ -69,17 +72,17 @@ exports.handler = async (event) => {
 
     if (gran === 'season' || gran === 'episode') {
       const sn = parseInt(seasonNumber, 10);
-      if (!Number.isInteger(sn) || sn < 1) return badRequest('seasonNumber must be a positive integer');
+      if (!Number.isInteger(sn) || sn < 1 || sn > 100) return badRequest('seasonNumber must be 1–100');
       review.seasonNumber = sn;
     }
     if (gran === 'episode') {
       const ep = parseInt(episodeNumber, 10);
-      if (!Number.isInteger(ep) || ep < 1) return badRequest('episodeNumber must be a positive integer');
+      if (!Number.isInteger(ep) || ep < 1 || ep > 2000) return badRequest('episodeNumber must be 1–2000');
       review.episodeNumber = ep;
     }
     if (gran === 'volume') {
       const vn = parseInt(volumeNumber, 10);
-      if (!Number.isInteger(vn) || vn < 1) return badRequest('volumeNumber must be a positive integer');
+      if (!Number.isInteger(vn) || vn < 1 || vn > 500) return badRequest('volumeNumber must be 1–500');
       review.volumeNumber = vn;
     }
 

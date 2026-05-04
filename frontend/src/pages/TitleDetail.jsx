@@ -463,6 +463,27 @@ export default function TitleDetail() {
   ].filter(Boolean).join(' · ');
   const ogUrl = `https://fantachi.com/title/${titleId}`;
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': title.type === 'anime' ? 'TVSeries' : 'ComicSeries',
+    name: title.titleEn,
+    ...(title.titleJa && { alternateName: title.titleJa }),
+    url: ogUrl,
+    ...(title.coverImageUrl && { image: title.coverImageUrl }),
+    ...(title.genres?.length > 0 && { genre: title.genres }),
+    ...(title.year && { datePublished: String(title.year) }),
+    ...(title.studio && { productionCompany: { '@type': 'Organization', name: title.studio } }),
+    ...(title.userScore != null && userReviews.length > 0 && {
+      aggregateRating: {
+        '@type': 'AggregateRating',
+        ratingValue: title.userScore,
+        bestRating: 100,
+        worstRating: 0,
+        ratingCount: userReviews.length,
+      },
+    }),
+  };
+
   return (
     <div className="max-w-4xl mx-auto">
       <Helmet>
@@ -477,6 +498,7 @@ export default function TitleDetail() {
         <meta name="twitter:title" content={ogTitle} />
         <meta name="twitter:description" content={ogDesc} />
         {title.coverImageUrl && <meta name="twitter:image" content={title.coverImageUrl} />}
+        <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
 
       {/* ── Header ──────────────────────────────────────────────── */}

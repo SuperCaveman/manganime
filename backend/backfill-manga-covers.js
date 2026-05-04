@@ -25,7 +25,7 @@ const {
 } = require('@aws-sdk/lib-dynamodb');
 
 const REGION = process.env.AWS_REGION || 'us-east-1';
-const TABLE  = process.env.RELEASE_CALENDAR_TABLE || 'mangacritic-release-calendar';
+const TABLE  = process.env.RELEASE_CALENDAR_TABLE || 'fantachi-release-calendar';
 
 const ddb = DynamoDBDocumentClient.from(new DynamoDBClient({ region: REGION }));
 

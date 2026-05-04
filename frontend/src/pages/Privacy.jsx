@@ -9,7 +9,7 @@ export default function Privacy() {
   return (
     <div className="max-w-3xl mx-auto py-4">
       <Helmet>
-        <title>{isJa ? 'プライバシーポリシー — MangaCritic' : 'Privacy Policy — MangaCritic'}</title>
+        <title>{isJa ? 'プライバシーポリシー — Fantachi' : 'Privacy Policy — Fantachi'}</title>
       </Helmet>
 
       <Link to="/" className="text-sm text-purple-400 hover:text-purple-300 transition-colors">
@@ -31,8 +31,8 @@ export default function Privacy() {
           </h2>
           <p className="text-sm mb-2 text-gray-400">
             {isJa
-              ? 'MangaCriticは、以下の情報を収集することがあります。'
-              : 'MangaCritic may collect the following information:'}
+              ? 'Fantachiは、以下の情報を収集することがあります。'
+              : 'Fantachi may collect the following information:'}
           </p>
           <ul className="text-sm space-y-1.5 list-disc list-inside text-gray-400">
             <li>
@@ -58,8 +58,8 @@ export default function Privacy() {
           </ul>
           <p className="text-sm mt-3 text-gray-400">
             {isJa
-              ? 'MangaCriticは現在、第三者の広告クッキーや追跡ピクセルを使用していません。'
-              : 'MangaCritic does not currently use third-party advertising cookies or tracking pixels.'}
+              ? 'Fantachiは現在、第三者の広告クッキーや追跡ピクセルを使用していません。'
+              : 'Fantachi does not currently use third-party advertising cookies or tracking pixels.'}
           </p>
         </section>
 
@@ -82,8 +82,8 @@ export default function Privacy() {
           </h2>
           <p className="text-sm text-gray-400">
             {isJa
-              ? 'MangaCriticはAmazonアソシエイト・プログラムの参加者です。amazon.com上の対象製品へのリンクを掲載しており、該当リンクを経由して購入が行われた場合、MangaCriticはアフィリエイト手数料を受け取ることがあります（アフィリエイトタグ：thunderwolfdr-20）。Amazonのプライバシーポリシーはamazon.comに準じます。'
-              : 'MangaCritic is a participant in the Amazon Associates Program. We include links to qualifying products on amazon.com and may earn an affiliate commission when a purchase is made through those links (affiliate tag: thunderwolfdr-20). Amazon\'s privacy practices are governed by amazon.com\'s own privacy policy.'}
+              ? 'FantachiはAmazonアソシエイト・プログラムの参加者です。amazon.com上の対象製品へのリンクを掲載しており、該当リンクを経由して購入が行われた場合、Fantachiはアフィリエイト手数料を受け取ることがあります（アフィリエイトタグ：thunderwolfdr-20）。Amazonのプライバシーポリシーはamazon.comに準じます。'
+              : 'Fantachi is a participant in the Amazon Associates Program. We include links to qualifying products on amazon.com and may earn an affiliate commission when a purchase is made through those links (affiliate tag: thunderwolfdr-20). Amazon\'s privacy practices are governed by amazon.com\'s own privacy policy.'}
           </p>
         </section>
 
@@ -93,8 +93,8 @@ export default function Privacy() {
           </h2>
           <p className="text-sm mb-3 text-gray-400">
             {isJa
-              ? 'MangaCriticは以下の外部サービスからデータを取得・表示しています。各サービスはそれぞれ独自のプライバシーポリシーを有します。'
-              : 'MangaCritic fetches and displays data from the following external services. Each service has its own privacy policy.'}
+              ? 'Fantachiは以下の外部サービスからデータを取得・表示しています。各サービスはそれぞれ独自のプライバシーポリシーを有します。'
+              : 'Fantachi fetches and displays data from the following external services. Each service has its own privacy policy.'}
           </p>
           <ul className="text-sm space-y-2 list-disc list-inside text-gray-400">
             <li><span className="text-gray-300">Anime News Network (ANN)</span> — {isJa ? 'ニュースフィード' : 'news feed'}</li>
@@ -111,8 +111,8 @@ export default function Privacy() {
           </ul>
           <p className="text-sm mt-3 text-gray-400">
             {isJa
-              ? 'これらのサービスとのデータのやり取りは、MangaCriticのサーバーを介して行われるか、またはブラウザから直接行われる場合があります。第三者のプライバシーポリシーについては各サービスのウェブサイトをご確認ください。'
-              : 'Interactions with these services may occur server-side through MangaCritic or directly from your browser. Please review each service\'s privacy policy on their respective websites.'}
+              ? 'これらのサービスとのデータのやり取りは、Fantachiのサーバーを介して行われるか、またはブラウザから直接行われる場合があります。第三者のプライバシーポリシーについては各サービスのウェブサイトをご確認ください。'
+              : 'Interactions with these services may occur server-side through Fantachi or directly from your browser. Please review each service\'s privacy policy on their respective websites.'}
           </p>
         </section>
 
@@ -122,8 +122,8 @@ export default function Privacy() {
           </h2>
           <p className="text-sm text-gray-400">
             {isJa
-              ? 'MangaCriticは、ログイン状態の維持のためにセッションクッキーを使用し、言語設定の保存のためにブラウザのローカルストレージを使用します。これらはサービスの動作に必要なものであり、第三者の広告クッキーは使用していません。'
-              : 'MangaCritic uses session cookies to maintain your login state and browser local storage to save your language preference. These are necessary for the service to function. We do not use third-party advertising cookies.'}
+              ? 'Fantachiは、ログイン状態の維持のためにセッションクッキーを使用し、言語設定の保存のためにブラウザのローカルストレージを使用します。これらはサービスの動作に必要なものであり、第三者の広告クッキーは使用していません。'
+              : 'Fantachi uses session cookies to maintain your login state and browser local storage to save your language preference. These are necessary for the service to function. We do not use third-party advertising cookies.'}
           </p>
         </section>
 

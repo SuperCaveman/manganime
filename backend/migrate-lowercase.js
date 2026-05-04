@@ -5,13 +5,13 @@
  * Backfills titleEnLower and titleJaLower on all existing Title records.
  *
  * Usage:
- *   STACK_NAME=mangacritic AWS_REGION=us-east-1 node migrate-lowercase.js
+ *   STACK_NAME=fantachi AWS_REGION=us-east-1 node migrate-lowercase.js
  */
 
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
 const { DynamoDBDocumentClient, ScanCommand, UpdateCommand } = require('@aws-sdk/lib-dynamodb');
 
-const STACK_NAME = process.env.STACK_NAME || 'mangacritic';
+const STACK_NAME = process.env.STACK_NAME || 'fantachi';
 const REGION = process.env.AWS_REGION || 'us-east-1';
 const TITLES_TABLE = `${STACK_NAME}-titles`;
 

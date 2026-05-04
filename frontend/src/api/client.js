@@ -58,4 +58,8 @@ export const releases = {
   get: (week, locale = 'en') => api.get('/releases', { params: { week, locale } }),
 };
 
+export const contact = {
+  send: (data) => api.post('/contact', data),
+};
+
 export default api;

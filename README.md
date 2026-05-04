@@ -1,4 +1,4 @@
-# MangaCritic
+# Fantachi
 
 A bilingual (EN/JA) Metacritic-style review aggregation site for anime and manga.
 

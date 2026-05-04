@@ -8,7 +8,7 @@
     "post_review": "Post a Review"
   },
   "home": {
-    "title": "MangaCritic",
+    "title": "Fantachi",
     "subtitle": "Aggregated Pro scores and Fan scores. Fully bilingual EN/JA.",
     "empty": "No titles found.",
     "nineties_title": "90s Spotlight",
@@ -88,7 +88,7 @@
     "episode_label": "Ep",
     "search_placeholder": "Search anime or manga title…",
     "no_results": "No results for \"{{query}}\"",
-    "add_title": "Add \"{{query}}\" to MangaCritic",
+    "add_title": "Add \"{{query}}\" to Fantachi",
     "not_listed": "Not listed?",
     "add_manually": "Add \"{{query}}\" manually",
     "change_title": "← Change",
@@ -108,7 +108,7 @@
     "view_title": "View Title",
     "post_another": "Post Another",
     "page_title": "Post a Review",
-    "page_subtitle": "Rate an existing title or add a new one to MangaCritic.",
+    "page_subtitle": "Rate an existing title or add a new one to Fantachi.",
     "read_full": "Read full review",
     "critic_disclaimer": "Pro scores and excerpts are sourced from third-party publications. Click to read the full review."
   },

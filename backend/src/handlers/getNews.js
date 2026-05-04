@@ -79,15 +79,17 @@ const OG_RE = [
   /content=["']([^"']+)["'][^>]*name=["']twitter:image["']/i,
 ];
 
-// Private/loopback IP ranges — block SSRF attempts
-const PRIVATE_IP_RE = /^(127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|::1$|fc00:|fd)/i;
+// Private/loopback/link-local/multicast IP ranges — block SSRF attempts
+const PRIVATE_IP_RE = /^(127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|169\.254\.|224\.|225\.|226\.|227\.|228\.|229\.|23[0-9]\.|24[0-9]\.|25[0-5]\.|0\.0\.0\.0|::1|fc00:|fd[0-9a-f]{2}:)/i;
 
 function isSafeUrl(rawUrl) {
   try {
     const u = new URL(rawUrl);
     if (u.protocol !== 'https:') return false;
-    // Block if the hostname is an IP address in a private range
+    // Block if the hostname is an IP address in a private/reserved range
     if (PRIVATE_IP_RE.test(u.hostname)) return false;
+    // Block bare IP addresses (non-hostname) to prevent numeric IP SSRF
+    if (/^[\d.]+$/.test(u.hostname) || u.hostname.startsWith('[')) return false;
     return true;
   } catch {
     return false;
@@ -98,10 +100,12 @@ async function fetchOgImage(url) {
   if (!isSafeUrl(url)) return '';
   try {
     const res = await fetch(url, {
-      headers: { 'User-Agent': 'MangaCritic/1.0 (news aggregator)' },
+      headers: { 'User-Agent': 'Fantachi/1.0 (news aggregator)' },
       signal: AbortSignal.timeout(5000),
     });
     if (!res.ok) return '';
+    const ct = res.headers.get('content-type') || '';
+    if (!ct.includes('text/html') && !ct.includes('application/xhtml')) return '';
     // Only read up to 30KB — OG tags are always near the top
     const reader = res.body.getReader();
     let html = '';
@@ -147,7 +151,7 @@ exports.handler = async (event) => {
 
     const res = await fetch(source.url, {
       headers: {
-        'User-Agent': 'MangaCritic/1.0 (news aggregator)',
+        'User-Agent': 'Fantachi/1.0 (news aggregator)',
         Accept: 'application/rss+xml, application/xml, text/xml',
       },
     });

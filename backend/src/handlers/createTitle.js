@@ -67,6 +67,7 @@ exports.handler = async (event) => {
 
     if (!titleEn?.trim()) return badRequest('titleEn is required');
     if (!['anime', 'manga'].includes(type)) return badRequest('type must be "anime" or "manga"');
+    if (malId !== undefined && !/^\d+$/.test(String(malId))) return badRequest('malId must be numeric');
 
     // Jikan-sourced titles use a stable malId-based key; manual titles use a slug
     const titleId = malId ? `${type}-${malId}` : slugify(titleEn);

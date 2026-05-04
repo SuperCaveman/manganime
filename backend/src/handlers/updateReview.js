@@ -41,10 +41,12 @@ exports.handler = async (event) => {
 
     if (!setParts.length) return badRequest('Nothing to update');
 
+    exprValues[':uid'] = userId;
     const updated = await ddb.send(new UpdateCommand({
       TableName: process.env.REVIEWS_TABLE,
       Key: { titleId, reviewId },
       UpdateExpression: `SET ${setParts.join(', ')}`,
+      ConditionExpression: 'userId = :uid',
       ExpressionAttributeValues: exprValues,
       ReturnValues: 'ALL_NEW',
     }));

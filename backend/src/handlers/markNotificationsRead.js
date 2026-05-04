@@ -16,6 +16,12 @@ exports.handler = async (event) => {
     if (!Array.isArray(notificationIds) || !notificationIds.length) {
       return badRequest('notificationIds array is required');
     }
+    if (notificationIds.length > 100) {
+      return badRequest('notificationIds must contain 100 or fewer entries');
+    }
+    if (notificationIds.some((id) => typeof id !== 'string' || id.length > 200)) {
+      return badRequest('Invalid notificationId');
+    }
 
     await Promise.all(notificationIds.map((notificationId) =>
       ddb.send(new UpdateCommand({

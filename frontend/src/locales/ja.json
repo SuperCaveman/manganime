@@ -8,7 +8,7 @@
     "post_review": "レビューを書く"
   },
   "home": {
-    "title": "MangaCritic",
+    "title": "Fantachi",
     "subtitle": "Proスコアとファンスコアを集約。英語・日本語に対応。",
     "empty": "タイトルが見つかりません。",
     "nineties_title": "90年代スポットライト",
@@ -88,7 +88,7 @@
     "episode_label": "第",
     "search_placeholder": "アニメ・マンガのタイトルを検索…",
     "no_results": "「{{query}}」の結果はありません",
-    "add_title": "「{{query}}」をMangaCriticに追加",
+    "add_title": "「{{query}}」をFantachiに追加",
     "not_listed": "見つかりませんか？",
     "add_manually": "「{{query}}」を手動で追加",
     "change_title": "← 変更",
@@ -108,7 +108,7 @@
     "view_title": "タイトルを見る",
     "post_another": "別のレビューを投稿",
     "page_title": "レビューを書く",
-    "page_subtitle": "既存のタイトルを評価するか、MangaCriticに新しいタイトルを追加してください。",
+    "page_subtitle": "既存のタイトルを評価するか、Fantachiに新しいタイトルを追加してください。",
     "read_full": "全文を読む",
     "critic_disclaimer": "Proスコアと抜粋はサードパーティの出版物から取得しています。全文を読むにはクリックしてください。"
   },

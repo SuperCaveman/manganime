@@ -1,8 +1,8 @@
 {
-  "name": "mangacritic-backend",
+  "name": "fantachi-backend",
   "version": "1.0.0",
   "private": true,
-  "description": "MangaCritic SAM backend",
+  "description": "Fantachi SAM backend",
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.699.0",
     "@aws-sdk/client-translate": "^3.699.0",

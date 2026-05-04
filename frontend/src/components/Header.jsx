@@ -199,7 +199,7 @@ export default function Header() {
             to="/"
             className="text-xl font-bold tracking-tight text-purple-400 hover:text-purple-300 transition-colors shrink-0"
           >
-            MangaCritic
+            Fantachi
           </Link>
 
           {/* Search bar — hidden on mobile, shown sm+ */}

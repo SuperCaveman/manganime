@@ -13,7 +13,7 @@
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
 const { DynamoDBDocumentClient, ScanCommand, UpdateCommand } = require('@aws-sdk/lib-dynamodb');
 
-const TABLE  = process.env.RELEASE_CALENDAR_TABLE || 'mangacritic-release-calendar';
+const TABLE  = process.env.RELEASE_CALENDAR_TABLE || 'fantachi-release-calendar';
 const REGION = process.env.AWS_REGION || 'us-east-1';
 
 const ddb = DynamoDBDocumentClient.from(new DynamoDBClient({ region: REGION }));

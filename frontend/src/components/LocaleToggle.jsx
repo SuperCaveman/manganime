@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { LOCALE_KEY } from '../i18n';
 
 export default function LocaleToggle() {
   const { i18n } = useTranslation();
@@ -7,7 +8,7 @@ export default function LocaleToggle() {
   const toggle = () => {
     const next = current === 'en' ? 'ja' : 'en';
     i18n.changeLanguage(next);
-    localStorage.setItem('locale', next);
+    localStorage.setItem(LOCALE_KEY, next);
   };
 
   return (

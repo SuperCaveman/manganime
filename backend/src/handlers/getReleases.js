@@ -22,15 +22,12 @@ function toDateStr(d) {
   return d.toISOString().slice(0, 10);
 }
 
-exports.handler = async (event) => {
-  const headers = {
-    'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*',
-  };
+const { ok, badRequest, serverError } = require('../utils/response');
 
+exports.handler = async (event) => {
   try {
-    const week = event.queryStringParameters?.week || 'current';
-    const locale = event.queryStringParameters?.locale || 'en';
+    const { week, locale: rawLocale } = event.queryStringParameters || {};
+    const locale = rawLocale === 'ja' ? 'ja' : 'en';
     const offsetWeeks = week === 'next' ? 1 : 0;
     const weekStart = toDateStr(getMondayUTC(offsetWeeks));
 
@@ -60,17 +57,9 @@ exports.handler = async (event) => {
       .filter(i => i.type === 'anime-physical')
       .sort((a, b) => a.releaseDate.localeCompare(b.releaseDate));
 
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify({ weekStart, animeEpisodes, mangaVolumes, animePhysical }),
-    };
+    return ok({ weekStart, animeEpisodes, mangaVolumes, animePhysical });
   } catch (err) {
     console.error('getReleases error:', err);
-    return {
-      statusCode: 500,
-      headers,
-      body: JSON.stringify({ error: 'Failed to fetch releases' }),
-    };
+    return serverError();
   }
 };

@@ -10,7 +10,7 @@
  * - Non-anime titles (manga) are skipped.
  *
  * Usage:
- *   STACK_NAME=mangacritic AWS_REGION=us-east-1 node migrate-trailers.js
+ *   STACK_NAME=fantachi AWS_REGION=us-east-1 node migrate-trailers.js
  *
  * Jikan rate limit: 3 req/sec — waits 400 ms between requests.
  */
@@ -18,7 +18,7 @@
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
 const { DynamoDBDocumentClient, ScanCommand, UpdateCommand } = require('@aws-sdk/lib-dynamodb');
 
-const STACK_NAME = process.env.STACK_NAME || 'mangacritic';
+const STACK_NAME = process.env.STACK_NAME || 'fantachi';
 const REGION     = process.env.AWS_REGION  || 'us-east-1';
 const TABLE      = `${STACK_NAME}-titles`;
 
