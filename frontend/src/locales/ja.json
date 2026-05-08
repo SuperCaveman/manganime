@@ -123,7 +123,15 @@
     "confirm_btn": "確認",
     "have_account": "すでにアカウントをお持ちですか？",
     "no_account": "アカウントをお持ちでない方は",
-    "check_email": "メールに確認コードが届きます。"
+    "check_email": "メールに確認コードが届きます。",
+    "forgot_password": "パスワードを忘れた方",
+    "forgot": "パスワードリセット",
+    "forgot_hint": "メールアドレスを入力すると、リセットコードが届きます。",
+    "send_code": "リセットコードを送信",
+    "reset": "新しいパスワードを設定",
+    "new_password": "新しいパスワード",
+    "reset_btn": "パスワードをリセット",
+    "back_to_login": "ログインに戻る"
   },
   "comment": {
     "placeholder": "コメントを書く…",

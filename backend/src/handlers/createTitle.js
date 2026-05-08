@@ -53,9 +53,6 @@ function slugify(str) {
 
 exports.handler = async (event) => {
   try {
-    const userId = event.requestContext?.authorizer?.jwt?.claims?.sub;
-    if (!userId) return badRequest('Unauthorized');
-
     let body;
     try {
       body = JSON.parse(event.body || '{}');

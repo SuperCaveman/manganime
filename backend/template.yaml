@@ -464,8 +464,6 @@ Resources:
             ApiId: !Ref HttpApi
             Path: /titles
             Method: POST
-            Auth:
-              Authorizer: CognitoJwtAuthorizer
 
   FetchCoverImageFunction:
     Type: AWS::Serverless::Function

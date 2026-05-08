@@ -203,23 +203,24 @@ function AnimeEpisodeCard({ item, isJa, navigate, allTitles }) {
   const hasReviews = matched && (matched.reviewCount || 0) > 0;
   const criticScore = matched?.criticScore ?? null;
   const userScore   = matched?.userScore   ?? null;
-
-  const findOrCreate = async () => {
-    const res = await titlesApi.create({
-      titleEn: item.titleEn,
-      titleJa: item.titleJa || '',
-      type: 'anime',
-      malId: item.malId,
-      coverImageUrl: item.coverImageUrl || '',
-    });
-    return res.data;
-  };
+  const [navigating, setNavigating] = useState(false);
 
   const handleClick = async () => {
+    if (navigating) return;
+    if (matched) { navigate(`/title/${matched.titleId}`); return; }
+    setNavigating(true);
     try {
-      const title = await findOrCreate();
-      navigate(`/title/${title.titleId}`);
-    } catch { /* ignore */ }
+      const res = await titlesApi.create({
+        titleEn: item.titleEn,
+        titleJa: item.titleJa || '',
+        type: 'anime',
+        malId: item.malId,
+        coverImageUrl: item.coverImageUrl || '',
+      });
+      navigate(`/title/${res.data.titleId}`);
+    } catch { /* ignore */ } finally {
+      setNavigating(false);
+    }
   };
 
   const handleReviewClick = (e) => {
@@ -240,7 +241,8 @@ function AnimeEpisodeCard({ item, isJa, navigate, allTitles }) {
   return (
     <button
       onClick={handleClick}
-      className="w-36 shrink-0 bg-gray-900 rounded-xl overflow-hidden border border-gray-800 hover:border-purple-600 transition-colors group text-left"
+      disabled={navigating}
+      className="w-36 shrink-0 bg-gray-900 rounded-xl overflow-hidden border border-gray-800 hover:border-purple-600 transition-colors group text-left disabled:opacity-60"
     >
       <div className="relative aspect-[3/4] bg-gray-800 overflow-hidden">
         {item.coverImageUrl ? (
@@ -715,7 +717,7 @@ function mapJikan(item, type) {
   };
 }
 
-function NinetiesSpotlight() {
+function NinetiesSpotlight({ allTitles }) {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const isJa = i18n.language === 'ja';
@@ -750,6 +752,8 @@ function NinetiesSpotlight() {
 
   const handleClick = async (jikanTitle) => {
     if (selecting !== null) return;
+    const matched = allTitles?.find((t) => t.malId === String(jikanTitle.malId));
+    if (matched) { navigate(`/title/${matched.titleId}`); return; }
     setSelecting(jikanTitle.malId);
     try {
       const res = await titlesApi.create({
@@ -1024,7 +1028,7 @@ export default function Home() {
       </section>
 
       {/* ── 90s Spotlight ────────────────────────────────────────── */}
-      <NinetiesSpotlight />
+      <NinetiesSpotlight allTitles={allTitles} />
 
       {/* ── Latest Trailers ──────────────────────────────────────── */}
       <LatestTrailers />

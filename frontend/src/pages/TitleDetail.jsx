@@ -491,6 +491,7 @@ export default function TitleDetail() {
         <meta name="description" content={ogDesc} />
         <meta property="og:title" content={ogTitle} />
         <meta property="og:description" content={ogDesc} />
+        <link rel="canonical" href={ogUrl} />
         <meta property="og:url" content={ogUrl} />
         <meta property="og:type" content="website" />
         {title.coverImageUrl && <meta property="og:image" content={title.coverImageUrl} />}

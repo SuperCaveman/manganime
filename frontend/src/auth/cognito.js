@@ -86,6 +86,26 @@ export function getCurrentUser() {
   });
 }
 
+export function forgotPassword(email) {
+  return new Promise((resolve, reject) => {
+    const user = new CognitoUser({ Username: email, Pool: userPool });
+    user.forgotPassword({
+      onSuccess: resolve,
+      onFailure: reject,
+    });
+  });
+}
+
+export function confirmForgotPassword(email, code, newPassword) {
+  return new Promise((resolve, reject) => {
+    const user = new CognitoUser({ Username: email, Pool: userPool });
+    user.confirmPassword(code, newPassword, {
+      onSuccess: resolve,
+      onFailure: reject,
+    });
+  });
+}
+
 export function updateUsername(username) {
   return new Promise((resolve, reject) => {
     const cognitoUser = userPool.getCurrentUser();

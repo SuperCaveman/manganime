@@ -123,7 +123,15 @@
     "confirm_btn": "Confirm",
     "have_account": "Already have an account?",
     "no_account": "Don't have an account?",
-    "check_email": "Check your email for a verification code."
+    "check_email": "Check your email for a verification code.",
+    "forgot_password": "Forgot password?",
+    "forgot": "Reset Password",
+    "forgot_hint": "Enter your email and we'll send you a reset code.",
+    "send_code": "Send Reset Code",
+    "reset": "Set New Password",
+    "new_password": "New Password",
+    "reset_btn": "Reset Password",
+    "back_to_login": "Back to Log In"
   },
   "comment": {
     "placeholder": "Write a comment…",
