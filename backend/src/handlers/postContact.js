@@ -1,7 +1,9 @@
 'use strict';
 
 const { SESClient, SendEmailCommand } = require('@aws-sdk/client-ses');
-const { badRequest, ok, serverError } = require('../utils/response');
+const { UpdateCommand } = require('@aws-sdk/lib-dynamodb');
+const { ddb } = require('../utils/dynamodb');
+const { badRequest, ok, serverError, tooManyRequests } = require('../utils/response');
 
 const ses = new SESClient({ region: process.env.AWS_REGION || 'us-east-1' });
 
@@ -22,6 +24,25 @@ exports.handler = async (event) => {
   if (!name)                      return badRequest('name is required');
   if (!EMAIL_RE.test(email))      return badRequest('valid email is required');
   if (message.length < 5)         return badRequest('message is required');
+
+  // Rate limit: 3 submissions per email per hour via DynamoDB TTL record
+  const rateLimitKey = `contact:${email.toLowerCase()}`;
+  const windowTtl = Math.floor(Date.now() / 1000) + 3600;
+  try {
+    await ddb.send(new UpdateCommand({
+      TableName: process.env.RATE_LIMIT_TABLE,
+      Key: { key: rateLimitKey },
+      ConditionExpression: 'attribute_not_exists(#cnt) OR #cnt < :max',
+      UpdateExpression: 'ADD #cnt :inc SET #ttl = if_not_exists(#ttl, :ttl)',
+      ExpressionAttributeNames: { '#cnt': 'count', '#ttl': 'ttl' },
+      ExpressionAttributeValues: { ':max': 3, ':inc': 1, ':ttl': windowTtl },
+    }));
+  } catch (err) {
+    if (err.name === 'ConditionalCheckFailedException') {
+      return tooManyRequests('Too many submissions. Please try again later.');
+    }
+    throw err;
+  }
 
   const dest = process.env.CONTACT_EMAIL;
   if (!dest) {

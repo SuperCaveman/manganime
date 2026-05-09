@@ -2,6 +2,11 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: Fantachi — bilingual anime/manga review aggregation
 
+Parameters:
+  ContactEmail:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: fantachi-contact-email
+
 Globals:
   Function:
     Runtime: nodejs20.x
@@ -19,8 +24,9 @@ Globals:
         COMMENTS_TABLE: !Ref CommentsTable
         NOTIFICATIONS_TABLE: !Ref NotificationsTable
         RELEASE_CALENDAR_TABLE: !Ref ReleaseCalendarTable
-        AFFILIATE_TAG: "thunderwolfdr-20"
+        AFFILIATE_TAG: "{{resolve:ssm:fantachi-affiliate-tag}}"
         CONTACT_EMAIL: "{{resolve:ssm:fantachi-contact-email}}"
+        RATE_LIMIT_TABLE: !Ref RateLimitTable
 
 Resources:
 
@@ -144,11 +150,24 @@ Resources:
           AttributeType: S
         - AttributeName: commentId
           AttributeType: S
+        - AttributeName: authorUserId
+          AttributeType: S
+        - AttributeName: createdAt
+          AttributeType: S
       KeySchema:
         - AttributeName: reviewId
           KeyType: HASH
         - AttributeName: commentId
           KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: AuthorIndex
+          KeySchema:
+            - AttributeName: authorUserId
+              KeyType: HASH
+            - AttributeName: createdAt
+              KeyType: RANGE
+          Projection:
+            ProjectionType: KEYS_ONLY
 
   NotificationsTable:
     Type: AWS::DynamoDB::Table
@@ -165,6 +184,21 @@ Resources:
           KeyType: HASH
         - AttributeName: notificationId
           KeyType: RANGE
+
+  RateLimitTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${AWS::StackName}-rate-limits"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: key
+          AttributeType: S
+      KeySchema:
+        - AttributeName: key
+          KeyType: HASH
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
 
   ReleaseCalendarTable:
     Type: AWS::DynamoDB::Table
@@ -200,6 +234,9 @@ Resources:
           AttributeDataType: String
           Mutable: true
           Required: false
+      MfaConfiguration: OPTIONAL
+      EnabledMfas:
+        - SOFTWARE_TOKEN_MFA
       Policies:
         PasswordPolicy:
           MinimumLength: 8
@@ -243,6 +280,9 @@ Resources:
             ModeBlock: true
             Override: true
             Protection: true
+          ContentSecurityPolicy:
+            ContentSecurityPolicy: "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.youtube.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https: blob:; font-src 'self' https://fonts.gstatic.com; frame-src https://www.youtube.com; connect-src 'self' https://api.jikan.moe https://ipapi.co https://cognito-idp.us-east-1.amazonaws.com https://zgef8xr9j9.execute-api.us-east-1.amazonaws.com"
+            Override: true
         CustomHeadersConfig:
           Items:
             - Header: Permissions-Policy
@@ -464,6 +504,8 @@ Resources:
             ApiId: !Ref HttpApi
             Path: /titles
             Method: POST
+            Auth:
+              Authorizer: CognitoJwtAuthorizer
 
   FetchCoverImageFunction:
     Type: AWS::Serverless::Function
@@ -768,12 +810,14 @@ Resources:
       CodeUri: .
       Handler: src/handlers/postContact.handler
       Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref RateLimitTable
         - Statement:
             - Effect: Allow
               Action:
                 - ses:SendEmail
                 - ses:SendRawEmail
-              Resource: !Sub "arn:aws:ses:${AWS::Region}:${AWS::AccountId}:identity/*"
+              Resource: !Sub "arn:aws:ses:${AWS::Region}:${AWS::AccountId}:identity/${ContactEmail}"
       Events:
         Api:
           Type: HttpApi

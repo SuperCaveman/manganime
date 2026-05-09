@@ -575,7 +575,8 @@ export default function TitleDetail() {
       {/* ── Amazon affiliate link ────────────────────────────────── */}
       {(() => {
         const q = encodeURIComponent(title.type === 'anime' ? `${title.titleEn} anime blu-ray` : `${title.titleEn} manga`);
-        const href = `https://www.amazon.com/s?k=${q}&tag=${import.meta.env.VITE_AFFILIATE_TAG || 'thunderwolfdr-20'}`;
+        const affiliateTag = import.meta.env.VITE_AFFILIATE_TAG;
+        const href = `https://www.amazon.com/s?k=${q}${affiliateTag ? `&tag=${affiliateTag}` : ''}`;
         const label = title.type === 'anime' ? t('title.buy_stream_amazon') : t('title.buy_manga_amazon');
         return (
           <div className="mb-6">

@@ -2,7 +2,7 @@
 
 const { PutCommand, GetCommand } = require('@aws-sdk/lib-dynamodb');
 const { ddb } = require('../utils/dynamodb');
-const { ok, created, badRequest, serverError } = require('../utils/response');
+const { ok, created, badRequest, unauthorized, serverError } = require('../utils/response');
 
 const ANILIST_QUERY = `
   query ($search: String, $type: MediaType) {
@@ -53,6 +53,9 @@ function slugify(str) {
 
 exports.handler = async (event) => {
   try {
+    const userId = event.requestContext?.authorizer?.jwt?.claims?.sub;
+    if (!userId) return unauthorized();
+
     let body;
     try {
       body = JSON.parse(event.body || '{}');

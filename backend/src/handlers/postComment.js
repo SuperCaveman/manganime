@@ -1,15 +1,25 @@
 'use strict';
 
 const { randomUUID } = require('crypto');
-const { PutCommand, GetCommand } = require('@aws-sdk/lib-dynamodb');
+const { PutCommand, GetCommand, QueryCommand } = require('@aws-sdk/lib-dynamodb');
 const { ddb } = require('../utils/dynamodb');
-const { created, badRequest, unauthorized, serverError } = require('../utils/response');
+const { created, badRequest, unauthorized, serverError, tooManyRequests } = require('../utils/response');
 
 exports.handler = async (event) => {
   try {
     const { titleId, reviewId } = event.pathParameters;
     const userId = event.requestContext?.authorizer?.jwt?.claims?.sub;
     if (!userId) return unauthorized();
+
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+    const { Count: recentCount } = await ddb.send(new QueryCommand({
+      TableName: process.env.COMMENTS_TABLE,
+      IndexName: 'AuthorIndex',
+      KeyConditionExpression: 'authorUserId = :uid AND createdAt > :ts',
+      ExpressionAttributeValues: { ':uid': userId, ':ts': oneHourAgo },
+      Select: 'COUNT',
+    }));
+    if (recentCount >= 20) return tooManyRequests('Rate limit: max 20 comments per hour');
 
     let body;
     try { body = JSON.parse(event.body || '{}'); } catch { return badRequest('Invalid JSON'); }

@@ -1,9 +1,9 @@
 'use strict';
 
 const { randomUUID } = require('crypto');
-const { PutCommand } = require('@aws-sdk/lib-dynamodb');
+const { PutCommand, QueryCommand } = require('@aws-sdk/lib-dynamodb');
 const { ddb } = require('../utils/dynamodb');
-const { created, badRequest, unauthorized, serverError } = require('../utils/response');
+const { created, badRequest, unauthorized, serverError, tooManyRequests } = require('../utils/response');
 const { recalculate } = require('./recalculateScores');
 
 exports.handler = async (event) => {
@@ -11,6 +11,16 @@ exports.handler = async (event) => {
     const { titleId } = event.pathParameters;
     const userId = event.requestContext?.authorizer?.jwt?.claims?.sub;
     if (!userId) return unauthorized();
+
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+    const { Count: recentCount } = await ddb.send(new QueryCommand({
+      TableName: process.env.REVIEWS_TABLE,
+      IndexName: 'UserIndex',
+      KeyConditionExpression: 'userId = :uid AND createdAt > :ts',
+      ExpressionAttributeValues: { ':uid': userId, ':ts': oneHourAgo },
+      Select: 'COUNT',
+    }));
+    if (recentCount >= 10) return tooManyRequests('Rate limit: max 10 reviews per hour');
 
     let body;
     try {

@@ -31,6 +31,9 @@ exports.handler = async (event) => {
     if (score !== undefined && (score < 0 || score > 100)) {
       return badRequest('score must be 0–100');
     }
+    const MAX_BODY = 5000;
+    if (bodyEn !== undefined && bodyEn.length > MAX_BODY) return badRequest(`bodyEn must be ${MAX_BODY} characters or fewer`);
+    if (bodyJa !== undefined && bodyJa.length > MAX_BODY) return badRequest(`bodyJa must be ${MAX_BODY} characters or fewer`);
 
     const setParts = [];
     const exprValues = {};

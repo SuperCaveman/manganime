@@ -42,4 +42,10 @@ const serverError = (message = 'Internal server error') => ({
   body: JSON.stringify({ error: message }),
 });
 
-module.exports = { ok, created, notFound, badRequest, unauthorized, forbidden, serverError };
+const tooManyRequests = (message = 'Too many requests') => ({
+  statusCode: 429,
+  headers,
+  body: JSON.stringify({ error: message }),
+});
+
+module.exports = { ok, created, notFound, badRequest, unauthorized, forbidden, serverError, tooManyRequests };
